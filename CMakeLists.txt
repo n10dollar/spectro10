@@ -67,3 +67,38 @@ install(TARGETS spectro10
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(spectro10)
 endif()
+
+
+# ======== link & include libraries ========
+# Configure pkg-config
+find_package(PkgConfig REQUIRED)
+
+# rtaudio config
+pkg_search_module(LIBRTAUDIO REQUIRED IMPORTED_TARGET rtaudio)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::LIBRTAUDIO)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBRTAUDIO_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${LIBRTAUDIO_CFLAGS})
+
+# fftw3 config
+pkg_search_module(LIBFFTW REQUIRED IMPORTED_TARGET fftw3)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::LIBFFTW)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBFFTW_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${LIBFFTW_CFLAGS})
+
+# speexdsp config
+pkg_search_module(LIBSPEEXDSP REQUIRED IMPORTED_TARGET speexdsp)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::LIBSPEEXDSP)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBSPEEXDSP_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${LIBSPEEXDSP_CFLAGS})
+
+# q config
+pkg_search_module(LIBQ REQUIRED IMPORTED_TARGET q)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::LIBQ)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBQ_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${LIBQ_CFLAGS})
+
+# mongocxx config
+pkg_search_module(LIBMONGOCXX REQUIRED IMPORTED_TARGET libmongocxx)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::LIBMONGOCXX)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBMONGOCXX_INCLUDE_DIRS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${LIBMONGOCXX_CFLAGS})
