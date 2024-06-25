@@ -13,6 +13,9 @@ public:
 
     AudioProcessor* audioProcessor;
 
+private:
+
+
 };
 
 #endif // CONTROLSMENU_H
