@@ -3,12 +3,8 @@
 #include <cmath>
 
 FFTManager::FFTManager(unsigned int fftSize, int direction, unsigned int flags, QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, fftSize(fftSize), direction(direction), flags(flags)
 {
-    this->fftSize = fftSize;
-    this->direction = direction;
-    this->flags = flags;
-
     dataIn = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
     dataOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
 
