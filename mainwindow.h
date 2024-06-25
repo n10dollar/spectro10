@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 
+#include "spectropage.h"
+#include "settingspage.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -10,5 +13,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+private:
+    SpectroPage spectroPage;
+    SettingsPage settingsPage;
 };
 #endif // MAINWINDOW_H
