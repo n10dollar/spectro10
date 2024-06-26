@@ -6,8 +6,12 @@
 #include "streammanager.h"
 #include "fftmanager.h"
 
+#define SAMPLE_RATE 44100
+#define FREQ_NYQUIST SAMPLE_RATE / 2
+
 #define BUFFER_SIZE 1024
 #define FFT_SIZE 1024
+#define NYQUIST_SIZE FFT_SIZE / 2
 
 class AudioProcessor : public QObject
 {
