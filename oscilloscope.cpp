@@ -1,6 +1,7 @@
 #include "oscilloscope.h"
 
 #include <QPaintEvent>
+#include <QDebug>
 
 Oscilloscope::Oscilloscope(std::vector<float>* dataStream, QWidget *parent)
     : QWidget{parent}, dataStream(dataStream), background(QColor(100, 100, 0))
@@ -13,6 +14,7 @@ Oscilloscope::Oscilloscope(std::vector<float>* dataStream, QWidget *parent)
 void Oscilloscope::update()
 {
     QWidget::update();
+    // qDebug() << "Oscilliscope updating!";
 };
 
 
@@ -30,9 +32,11 @@ void Oscilloscope::paint(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    for (int s; s < dataStream->size(); s++)
+    // qDebug() << "Oscilliscope pt " << dataStream->size() / 2 << ": " << (*dataStream)[dataStream->size() / 2];
+    for (int s = 0; s < dataStream->size(); s++)
     {
-        unsigned int point = (((*dataStream)[2 * s] + 1.0f) / 2.0f) * height();
+        unsigned int point = (((*dataStream)[s] + 1.0f) / 2.0f) * height();
+        // qDebug() << "Oscilliscope pt " << dataStream->size() / 2 << ": " << point;
         painter->drawLine(s, height() / 2, s, height() - point);
     }
 }

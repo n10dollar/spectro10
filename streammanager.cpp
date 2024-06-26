@@ -71,6 +71,8 @@ void StreamManager::startStream()
 void StreamManager::stopStream()
 {
     rtAudio.stopStream();
+    // for (int s = 0; s < BUFFER_SIZE; s++)
+    //     qDebug() << "Stream pt " << s << ": " << callbackData.iVecBuffer[s];
 }
 
 void StreamManager::tickStream()
@@ -98,8 +100,10 @@ int StreamManager::nullCallback
     auto oBuffer = (int *) outputBuffer;
     auto callbackData = (CallbackData *) data;
 
+    // qDebug() << "Stream pt (int) " << nBufferFrames / 2 << ": " << iBuffer[nBufferFrames / 2];
     for (int i = 0; i < nBufferFrames; i++)
         callbackData->iVecBuffer[i] = ((float) iBuffer[i]) / ((float) INT32_MAX);
-
+    // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << callbackData->iVecBuffer[nBufferFrames / 2];
+    \
     return 0;
 }

@@ -31,6 +31,8 @@ StreamParams;
 
 typedef struct
 {
+    // Floating point PCM data
+    // Range: [-1, 1]
     std::vector<float> iVecBuffer;
     std::vector<float> oVecBuffer;
 }

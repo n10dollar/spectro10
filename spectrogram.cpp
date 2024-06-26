@@ -1,6 +1,7 @@
 #include "spectrogram.h"
 
 #include <QPaintEvent>
+#include <QDebug>
 
 Spectrogram::Spectrogram(std::vector<float>* dataStream, QWidget *parent)
     : QWidget{parent}, dataStream(dataStream), background(QColor(100, 100, 0))
@@ -13,6 +14,7 @@ Spectrogram::Spectrogram(std::vector<float>* dataStream, QWidget *parent)
 void Spectrogram::update()
 {
     QWidget::update();
+    // qDebug() << "Spectrogram updating!";
 };
 
 

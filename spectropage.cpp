@@ -2,6 +2,7 @@
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QTimer>
 
 SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
     : QWidget{parent},
@@ -29,4 +30,12 @@ SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
     row->addLayout(postCol);
 
     setLayout(row);
+
+    // Timer to update GUI components
+    QTimer* timer = new QTimer;
+    connect(timer, &QTimer::timeout, &preOscilliscope, &Oscilloscope::update);
+    connect(timer, &QTimer::timeout, &postOscilliscope, &Oscilloscope::update);
+    connect(timer, &QTimer::timeout, &preSpectrogram, &Spectrogram::update);
+    connect(timer, &QTimer::timeout, &postSpectrogram, &Spectrogram::update);
+    timer->start(UPDATE_INTERVAL);
 }

@@ -8,6 +8,8 @@
 #include "oscilloscope.h"
 #include "spectrogram.h"
 
+#define UPDATE_INTERVAL 10
+
 class SpectroPage : public QWidget
 {
     Q_OBJECT
