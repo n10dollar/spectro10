@@ -1,10 +1,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-class Utils
-{
-public:
-    Utils();
-};
+#include <vector>
+
+int highestMatchingSampleRate
+(
+    const std::vector<unsigned int>& sRateInput,
+    const std::vector<unsigned int>& sRateOutput
+);
 
 #endif // UTILS_H

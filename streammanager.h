@@ -43,9 +43,21 @@ class StreamManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit StreamManager(QObject *parent = nullptr);
+    explicit StreamManager
+    (
+        RtAudioFormat audioFormat = AUDIO_FORMAT,
+        unsigned int bufferSize = BUFFER_SIZE,
+        QObject *parent = nullptr
+    );
 
     CallbackData callbackData;
+
+    RtAudioFormat audioFormat;
+    unsigned int sampleRate;
+    unsigned int bufferSize;
+
+    unsigned int numInputChannels;
+    unsigned int numOutputChannels;
 
 public slots:
     void openStream();
@@ -70,6 +82,8 @@ private:
         RtAudioStreamStatus status,
         void *data
     );
+
+
 };
 
 #endif // STREAMMANAGER_H
