@@ -25,11 +25,15 @@ MainWindow::MainWindow(QWidget *parent)
     buttonBox->addWidget(spectroButton);
     buttonBox->addWidget(settingsButton);
 
+    // Main layout
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addLayout(buttonBox);
     mainLayout->addWidget(stackedWidget);
 
-    setLayout(mainLayout);
+    // Main widget
+    QWidget* mainWidget = new QWidget;
+    mainWidget->setLayout(mainLayout);
+    setCentralWidget(mainWidget);
 }
 
 

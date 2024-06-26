@@ -11,11 +11,8 @@ class ControlsMenu : public QWidget
 public:
     explicit ControlsMenu(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
 
-    AudioProcessor* audioProcessor;
-
 private:
-
-
+    AudioProcessor* audioProcessor;
 };
 
 #endif // CONTROLSMENU_H
