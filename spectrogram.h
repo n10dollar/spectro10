@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPainter>
+#include <vector>
 
 #include "audioprocessor.h"
 
@@ -20,7 +21,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    AudioProcessor* audioProcessor;
+    std::vector<T>* dataStream;
 
     // Core painting/drawing functionality
     void paint(QPainter* painter, QPaintEvent* event);

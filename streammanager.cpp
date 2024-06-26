@@ -32,7 +32,12 @@ StreamManager::StreamManager(QObject *parent)
     streamParams.audioCallback = &nullCallback;
 
     // Set additional data params
-    streamParams.userData = nullptr;
+    streamParams.userData = &callbackData;
+    // streamParams.options = ?;
+
+    // Configure vector buffers
+    callbackData.iVecBuffer.resize(BUFFER_SIZE);
+    callbackData.oVecBuffer.resize(BUFFER_SIZE);
 }
 
 
@@ -96,6 +101,10 @@ int StreamManager::nullCallback
 {
     auto iBuffer = (int *) inputBuffer;
     auto oBuffer = (int *) outputBuffer;
+    auto callbackData = (CallbackData *) data;
+
+    for (int i = 0; i < nBufferFrames; i++)
+        callbackData->iVecBuffer[i] = iBuffer[i];
 
     return 0;
 }

@@ -2,8 +2,8 @@
 #define STREAMMANAGER_H
 
 #include <QObject>
-
 #include <RtAudio.h>
+#include <vector>
 
 #define AUDIO_FORMAT RTAUDIO_SINT32
 #define SAMPLE_RATE 44100
@@ -29,11 +29,21 @@ typedef struct
 StreamParams;
 
 
+typedef struct
+{
+    std::vector<int> iVecBuffer;
+    std::vector<int> oVecBuffer;
+}
+CallbackData;
+
+
 class StreamManager : public QObject
 {
     Q_OBJECT
 public:
     explicit StreamManager(QObject *parent = nullptr);
+
+    CallbackData callbackData;
 
 public slots:
     void openStream();
