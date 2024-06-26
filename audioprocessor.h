@@ -8,7 +8,7 @@
 
 #define FREQ_NYQUIST 44100 / 2
 
-#define FFT_SIZE 1024
+#define FFT_SIZE 512
 #define NYQUIST_SIZE FFT_SIZE / 2
 
 class AudioProcessor : public QObject

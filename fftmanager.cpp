@@ -2,13 +2,17 @@
 
 #include <cmath>
 
-FFTManager::FFTManager(unsigned int fftSize, int direction, unsigned int flags, QObject *parent)
+FFTManager::FFTManager(std::vector<float>* iVecBuffer, unsigned int fftSize, int direction, unsigned int flags, QObject *parent)
     : QObject{parent}, fftSize(fftSize), direction(direction), flags(flags)
 {
+    fftData.iVecBuffer = iVecBuffer;
+
     dataIn = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
     dataOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
 
     fftPlan = fftw_plan_dft_1d(this->fftSize, dataIn, dataOut, this->direction, this->flags);
+
+    fftData.vecFFT.resize(fftSize);
 }
 
 
@@ -19,15 +23,20 @@ FFTManager::~FFTManager()
 }
 
 
+void FFTManager::update()
+{
+    FFT();
+}
+
+
 // vecIn: real components of signal samples
 // vecOut: magnitudes of signal FFT
-template <typename T>
-void FFTManager::FFT(const std::vector<T>& vecIn, std::vector<T>& vecOut)
+void FFTManager::FFT()
 {
     // copy vecIn into dataIn
     for (int i = 0; i < fftSize; i++)
     {
-        dataIn[i][0] = (double) vecIn[i];
+        dataIn[i][0] = (double) (*fftData.iVecBuffer)[i];
         dataIn[i][1] = 0.0;
     }
 
@@ -35,7 +44,7 @@ void FFTManager::FFT(const std::vector<T>& vecIn, std::vector<T>& vecOut)
 
     // copy vecOut magnitude into dataOut
     for (int i = 0; i < fftSize; i++)
-        vecOut[i] = (T) std::sqrt
+        fftData.vecFFT[i] = (float) std::sqrt
         (
             std::pow(dataOut[i][0], 2) +
             std::pow(dataOut[i][1], 2)

@@ -32,13 +32,11 @@ void Spectrogram::paint(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    // for (int i = 0; i < NYQUIST_SIZE; i++)
-    // {
-    //     int freqMagLeft = fftData->fftMagLeft[i] / fftData->fftSize * height();
-    //     int freqMagRight = fftData->fftMagRight[i] / fftData->fftSize * height();
-
-    //     int averageMag = (freqMagLeft + freqMagRight) / 2;
-
-    //     painter->drawLine(i, height(), i, height() - averageMag * 3);
-    // }
+    for (int s = 0; s < dataStream->size() / 2; s++)
+    {
+        unsigned int point = (*dataStream)[s] * 3;
+        // qDebug() << "Spectrogram pt " << dataStream->size() / 2 << ": " << point;
+        painter->drawLine(2 * s, height(), 2 * s, height() - point);
+        painter->drawLine(2 * s + 1, height(), 2 * s + 1, height() - point);
+    }
 }

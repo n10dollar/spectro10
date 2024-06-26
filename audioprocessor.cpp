@@ -1,5 +1,5 @@
 #include "audioprocessor.h"
 
 AudioProcessor::AudioProcessor(QObject *parent)
-    : QObject{parent}, fftManager(FFT_SIZE)
+    : QObject{parent}, fftManager(&streamManager.callbackData.iVecBuffer, FFT_SIZE)
 {}

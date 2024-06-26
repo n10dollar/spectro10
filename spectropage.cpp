@@ -10,8 +10,8 @@ SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
     controlsMenu(audioProcessor),
     preOscilliscope(&audioProcessor->streamManager.callbackData.iVecBuffer),
     postOscilliscope(&audioProcessor->streamManager.callbackData.oVecBuffer),
-    preSpectrogram(&audioProcessor->streamManager.callbackData.iVecBuffer),
-    postSpectrogram(&audioProcessor->streamManager.callbackData.oVecBuffer)
+    preSpectrogram(&audioProcessor->fftManager.fftData.vecFFT),
+    postSpectrogram(&audioProcessor->fftManager.fftData.vecFFT)
 {
     // Highest level box
     QHBoxLayout* row = new QHBoxLayout;
@@ -33,6 +33,7 @@ SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
 
     // Timer to update GUI components
     QTimer* timer = new QTimer;
+    connect(timer, &QTimer::timeout, &audioProcessor->fftManager, &FFTManager::update);
     connect(timer, &QTimer::timeout, &preOscilliscope, &Oscilloscope::update);
     connect(timer, &QTimer::timeout, &postOscilliscope, &Oscilloscope::update);
     connect(timer, &QTimer::timeout, &preSpectrogram, &Spectrogram::update);

@@ -3,7 +3,22 @@
 
 #include <QObject>
 
+#include <vector>
 #include <fftw3.h>
+
+
+typedef struct
+{
+    // Floating point PCM data
+    // Range: [0, 1]
+    std::vector<float>* iVecBuffer;
+
+    // Floating point FFT data
+    // Range: [0, 1]
+    std::vector<float> vecFFT;
+}
+FFTData;
+
 
 class FFTManager : public QObject
 {
@@ -11,6 +26,7 @@ class FFTManager : public QObject
 public:
     explicit FFTManager
     (
+        std::vector<float>* iVecBuffer,
         unsigned int fftSize,
         int direction = FFTW_FORWARD,
         unsigned int flags = FFTW_MEASURE,
@@ -18,8 +34,12 @@ public:
     );
     ~FFTManager();
 
-    template <typename T>
-    void FFT(const std::vector<T>& vecIn, std::vector<T>& vecOut);
+    void FFT();
+
+    FFTData fftData;
+
+public slots:
+    void update();
 
 private:
     fftw_plan fftPlan;
