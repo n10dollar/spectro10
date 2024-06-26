@@ -7,10 +7,10 @@ SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
     : QWidget{parent},
     audioProcessor(audioProcessor),
     controlsMenu(audioProcessor),
-    preOscilliscope(audioProcessor),
-    postOscilliscope(audioProcessor),
-    preSpectrogram(audioProcessor),
-    postSpectrogram(audioProcessor)
+    preOscilliscope(&audioProcessor->streamManager.callbackData.iVecBuffer),
+    postOscilliscope(&audioProcessor->streamManager.callbackData.oVecBuffer),
+    preSpectrogram(&audioProcessor->streamManager.callbackData.iVecBuffer),
+    postSpectrogram(&audioProcessor->streamManager.callbackData.oVecBuffer)
 {
     // Highest level box
     QHBoxLayout* row = new QHBoxLayout;

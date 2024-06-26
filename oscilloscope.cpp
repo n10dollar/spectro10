@@ -2,10 +2,10 @@
 
 #include <QPaintEvent>
 
-Oscilloscope::Oscilloscope(AudioProcessor* audioProcessor, QWidget *parent)
-    : QWidget{parent}, audioProcessor(audioProcessor), background(QColor(100, 100, 0))
+Oscilloscope::Oscilloscope(std::vector<float>* dataStream, QWidget *parent)
+    : QWidget{parent}, dataStream(dataStream), background(QColor(100, 100, 0))
 {
-    setFixedSize(NYQUIST_SIZE, 50);
+    setFixedSize(dataStream->size(), 50);
 }
 
 
@@ -30,13 +30,9 @@ void Oscilloscope::paint(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    // for (int i = 0; i < NYQUIST_SIZE; i++)
-    // {
-    //     int freqMagLeft = fftData->fftMagLeft[i] / fftData->fftSize * height();
-    //     int freqMagRight = fftData->fftMagRight[i] / fftData->fftSize * height();
-
-    //     int averageMag = (freqMagLeft + freqMagRight) / 2;
-
-    //     painter->drawLine(i, height(), i, height() - averageMag * 3);
-    // }
+    for (int s; s < dataStream->size(); s++)
+    {
+        unsigned int point = (((*dataStream)[2 * s] + 1.0f) / 2.0f) * height();
+        painter->drawLine(s, height() / 2, s, height() - point);
+    }
 }

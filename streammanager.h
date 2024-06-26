@@ -7,7 +7,7 @@
 
 #define AUDIO_FORMAT RTAUDIO_SINT32
 #define SAMPLE_RATE 44100
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 512
 
 #define NUM_INPUT_CHANNELS 1
 #define NUM_OUTPUT_CHANNELS 2
@@ -31,8 +31,8 @@ StreamParams;
 
 typedef struct
 {
-    std::vector<int> iVecBuffer;
-    std::vector<int> oVecBuffer;
+    std::vector<float> iVecBuffer;
+    std::vector<float> oVecBuffer;
 }
 CallbackData;
 

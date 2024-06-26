@@ -5,13 +5,11 @@
 #include <QPainter>
 #include <vector>
 
-#include "audioprocessor.h"
-
 class Spectrogram : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Spectrogram(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
+    explicit Spectrogram(std::vector<float>* dataStream, QWidget *parent = nullptr);
 
 public slots:
     void update();
@@ -21,7 +19,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    std::vector<T>* dataStream;
+    std::vector<float>* dataStream;
 
     // Core painting/drawing functionality
     void paint(QPainter* painter, QPaintEvent* event);

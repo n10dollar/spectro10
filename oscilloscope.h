@@ -3,14 +3,13 @@
 
 #include <QWidget>
 #include <QPainter>
-
-#include "audioprocessor.h"
+#include <vector>
 
 class Oscilloscope : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Oscilloscope(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
+    explicit Oscilloscope(std::vector<float>* dataStream, QWidget *parent = nullptr);
 
 public slots:
     void update();
@@ -20,7 +19,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    AudioProcessor* audioProcessor;
+    std::vector<float>* dataStream;
 
     // Core painting/drawing functionality
     void paint(QPainter* painter, QPaintEvent* event);

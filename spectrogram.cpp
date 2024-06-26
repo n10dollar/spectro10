@@ -2,10 +2,10 @@
 
 #include <QPaintEvent>
 
-Spectrogram::Spectrogram(AudioProcessor* audioProcessor, QWidget *parent)
-    : QWidget{parent}, audioProcessor(audioProcessor), background(QColor(100, 100, 0))
+Spectrogram::Spectrogram(std::vector<float>* dataStream, QWidget *parent)
+    : QWidget{parent}, dataStream(dataStream), background(QColor(100, 100, 0))
 {
-    setFixedSize(NYQUIST_SIZE, 200);
+    setFixedSize(dataStream->size(), 200);
 }
 
 

@@ -1,6 +1,7 @@
 #include "streammanager.h"
 
 #include <QDebug>
+#include <climits>>
 
 StreamManager::StreamManager(QObject *parent)
     : QObject{parent}
@@ -44,23 +45,17 @@ StreamManager::StreamManager(QObject *parent)
 // ========= control audio stream =========
 void StreamManager::openStream()
 {
-    if
+    rtAudio.openStream
     (
-        rtAudio.openStream
-        (
-            &streamParams.inputParameters,
-            &streamParams.outputParameters,
-            streamParams.audioFormat,
-            streamParams.sampleRate,
-            &streamParams.bufferFrames,
-            streamParams.audioCallback,
-            streamParams.userData,
-            &streamParams.options
-        )
-    )
-        qDebug() << rtAudio.getErrorText();
-    else
-        qDebug() << "Opened audio stream!";
+        &streamParams.outputParameters,
+        &streamParams.inputParameters,
+        streamParams.audioFormat,
+        streamParams.sampleRate,
+        &streamParams.bufferFrames,
+        streamParams.audioCallback,
+        streamParams.userData,
+        &streamParams.options
+    );
 }
 
 void StreamManager::closeStream()
@@ -104,7 +99,7 @@ int StreamManager::nullCallback
     auto callbackData = (CallbackData *) data;
 
     for (int i = 0; i < nBufferFrames; i++)
-        callbackData->iVecBuffer[i] = iBuffer[i];
+        callbackData->iVecBuffer[i] = ((float) iBuffer[i]) / ((float) INT32_MAX);
 
     return 0;
 }
