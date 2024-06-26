@@ -1,5 +1,5 @@
 #include "spectrogram.h"
 
-Spectrogram::Spectrogram(QWidget *parent)
-    : QWidget{parent}
+Spectrogram::Spectrogram(AudioProcessor* audioProcessor, QWidget *parent)
+    : QWidget{parent}, audioProcessor(audioProcessor)
 {}

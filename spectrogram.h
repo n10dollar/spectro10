@@ -3,13 +3,16 @@
 
 #include <QWidget>
 
+#include "audioprocessor.h"
+
 class Spectrogram : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Spectrogram(QWidget *parent = nullptr);
+    explicit Spectrogram(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
 
-signals:
+private:
+    AudioProcessor* audioProcessor;
 };
 
 #endif // SPECTROGRAM_H

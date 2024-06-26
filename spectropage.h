@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+#include "audioprocessor.h"
 #include "controlsmenu.h"
 #include "oscilloscope.h"
 #include "spectrogram.h"
@@ -11,9 +12,11 @@ class SpectroPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SpectroPage(QWidget *parent = nullptr);
+    explicit SpectroPage(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
 
 private:
+    AudioProcessor* audioProcessor;
+
     ControlsMenu controlsMenu;
 
     Oscilloscope preOscilliscope;
@@ -21,8 +24,6 @@ private:
 
     Spectrogram preSpectrogram;
     Spectrogram postSpectrogram;
-
-signals:
 };
 
 #endif // SPECTROPAGE_H

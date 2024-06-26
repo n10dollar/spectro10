@@ -1,5 +1,5 @@
 #include "settingspage.h"
 
-SettingsPage::SettingsPage(QWidget *parent)
-    : QWidget{parent}
+SettingsPage::SettingsPage(AudioProcessor* audioProcessor, QWidget *parent)
+    : QWidget{parent}, audioProcessor(audioProcessor)
 {}

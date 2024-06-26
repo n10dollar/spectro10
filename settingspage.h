@@ -3,13 +3,16 @@
 
 #include <QWidget>
 
+#include "audioprocessor.h"
+
 class SettingsPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SettingsPage(QWidget *parent = nullptr);
+    explicit SettingsPage(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
 
-signals:
+private:
+    AudioProcessor* audioProcessor;
 };
 
 #endif // SETTINGSPAGE_H

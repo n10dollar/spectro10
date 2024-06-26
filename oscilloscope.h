@@ -3,13 +3,16 @@
 
 #include <QWidget>
 
+#include "audioprocessor.h"
+
 class Oscilloscope : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Oscilloscope(QWidget *parent = nullptr);
+    explicit Oscilloscope(AudioProcessor* audioProcessor, QWidget *parent = nullptr);
 
-signals:
+private:
+    AudioProcessor* audioProcessor;
 };
 
 #endif // OSCILLOSCOPE_H

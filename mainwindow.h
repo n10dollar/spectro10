@@ -3,8 +3,7 @@
 
 #include <QMainWindow>
 
-#include "spectropage.h"
-#include "settingspage.h"
+#include "audioprocessor.h"
 
 class MainWindow : public QMainWindow
 {
@@ -15,7 +14,6 @@ public:
     ~MainWindow();
 
 private:
-    SpectroPage spectroPage;
-    SettingsPage settingsPage;
+    AudioProcessor audioProcessor;
 };
 #endif // MAINWINDOW_H

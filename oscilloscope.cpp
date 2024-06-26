@@ -1,5 +1,5 @@
 #include "oscilloscope.h"
 
-Oscilloscope::Oscilloscope(QWidget *parent)
-    : QWidget{parent}
+Oscilloscope::Oscilloscope(AudioProcessor* audioProcessor, QWidget *parent)
+    : QWidget{parent}, audioProcessor(audioProcessor)
 {}
