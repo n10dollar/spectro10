@@ -3,10 +3,8 @@
 #include <cmath>
 
 FFTManager::FFTManager(std::vector<float>* iVecBuffer, unsigned int fftSize, int direction, unsigned int flags, QObject *parent)
-    : QObject{parent}, fftSize(fftSize), direction(direction), flags(flags)
+    : QObject{parent}, fftData{iVecBuffer, {}}, fftSize(fftSize), direction(direction), flags(flags)
 {
-    fftData.iVecBuffer = iVecBuffer;
-
     dataIn = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
     dataOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * this->fftSize);
 
