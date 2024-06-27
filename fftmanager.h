@@ -6,6 +6,13 @@
 #include <vector>
 #include <fftw3.h>
 
+#include "streammanager.h"
+
+#define FFT_SIZE BUFFER_SIZE
+#define NYQUIST_SIZE FFT_SIZE / 2
+
+#define FFT_DIRECTION FFTW_FORWARD
+#define FFT_FLAGS FFTW_MEASURE
 
 typedef struct
 {
@@ -27,9 +34,9 @@ public:
     explicit FFTManager
     (
         std::vector<float>* iVecBuffer,
-        unsigned int fftSize,
-        int direction = FFTW_FORWARD,
-        unsigned int flags = FFTW_MEASURE,
+        unsigned int fftSize = FFT_SIZE,
+        int direction = FFT_DIRECTION,
+        unsigned int flags = FFT_FLAGS,
         QObject *parent = nullptr
     );
     ~FFTManager();

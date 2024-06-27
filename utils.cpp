@@ -1,9 +1,14 @@
 #include "utils.h"
 
-int highestMatchingSampleRate
+#include <QDebug>
+#include <cmath>
+#include <climits>
+
+int closestMatchingSampleRate
 (
     const std::vector<unsigned int>& sRateInput,
-    const std::vector<unsigned int>& sRateOutput
+    const std::vector<unsigned int>& sRateOutput,
+    int srRef
 )
 {
     std::vector<unsigned int> inputCopy(sRateInput);
@@ -12,13 +17,19 @@ int highestMatchingSampleRate
     std::sort(inputCopy.begin(), inputCopy.end());
     std::sort(outputCopy.begin(), outputCopy.end());
 
-    int iInput = inputCopy.size();
-    int iOutput = outputCopy.size();
+    std::vector<int> matching;
+
+    int iInput = inputCopy.size() - 1;
+    int iOutput = outputCopy.size() - 1;
 
     while (iInput >= 0 && iOutput >= 0)
     {
         if (sRateInput[iInput] == sRateInput[iOutput])
-            return sRateInput[iInput];
+        {
+            matching.push_back(sRateInput[iInput]);
+            iOutput--;
+            iInput--;
+        }
         else if (sRateInput[iInput] < sRateInput[iOutput])
             iOutput--;
         else if (sRateInput[iInput] > sRateInput[iOutput])
@@ -26,5 +37,16 @@ int highestMatchingSampleRate
     }
 
     // no match: -1
-    return -1;
+    int closest40 = -1;
+    int minAbsVal = INT_MAX;
+
+    for (int sampleRate : matching)
+        if (std::abs(sampleRate - srRef) < minAbsVal)
+        {
+            minAbsVal = std::abs(sampleRate - srRef);
+            closest40 = sampleRate;
+        }
+
+    qDebug() << "Closest matching sample rate to " << srRef << ": " << closest40;
+    return closest40;
 }

@@ -38,7 +38,7 @@ StreamManager::StreamManager
     qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
 
     // Set data fields
-    sampleRate = highestMatchingSampleRate(infoInput.sampleRates, infoOutput.sampleRates);
+    sampleRate = closestMatchingSampleRate(infoInput.sampleRates, infoOutput.sampleRates);
 
     // Set input/output channels
     numInputChannels = infoInput.inputChannels;
