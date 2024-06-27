@@ -11,8 +11,11 @@ typedef struct
     StreamData* streamData;
     FFTData* fftData;
 
-    std::vector<float> iVecAvg;
-    std::vector<float> oVecAvg;
+    std::vector<float> iVecBufferAvg;
+    std::vector<float> oVecBufferAvg;
+
+    std::vector<float> iVecFFTAvg;
+    std::vector<float> oVecFFTAvg;
 }
 AudioData;
 
@@ -30,6 +33,9 @@ public:
 
 public slots:
     void update();
+
+private:
+    void createAverages();
 };
 
 #endif // AUDIOPROCESSOR_H

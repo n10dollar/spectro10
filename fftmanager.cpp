@@ -4,7 +4,7 @@
 
 FFTManager::FFTManager
 (
-    std::vector<std::vector<float>>* iVecBuffers,
+    std::vector<std::vector<float>>* iVecFFTs,
     unsigned int fftSize,
     int direction,
     unsigned int flags,
@@ -13,7 +13,7 @@ FFTManager::FFTManager
     : QObject{parent}
 {
     // Configure data params
-        fftData.numFFTBuffers = iVecBuffers->size();
+        fftData.numFFTBuffers = iVecFFTs->size();
 
         fftData.fftSize = fftSize;
         fftParams.fftSize = fftSize;
@@ -36,7 +36,7 @@ FFTManager::FFTManager
         );
 
     // Configure FFT input/output
-        fftData.iVecBuffers = iVecBuffers;
+        fftData.iVecFFTs = iVecFFTs;
 
         // Resize vecFFTs based iVecBuffers input
         fftData.oVecFFTs.resize(fftData.numFFTBuffers);
@@ -55,7 +55,7 @@ FFTManager::~FFTManager()
 void FFTManager::update()
 {
     for (int i = 0; i < fftData.numFFTBuffers; i++)
-        FFT((*fftData.iVecBuffers)[i], fftData.oVecFFTs[i]);
+        FFT((*fftData.iVecFFTs)[i], fftData.oVecFFTs[i]);
 }
 
 
@@ -63,14 +63,14 @@ void FFTManager::update()
 // vecOut: magnitudes of signal FFT
 void FFTManager::FFT
 (
-    std::vector<float>& iVecBuffer,
+    std::vector<float>& iVecFFTs,
     std::vector<float>& oVecFFT
 )
 {
     // copy vecIn into dataIn
     for (int i = 0; i < fftParams.fftSize; i++)
     {
-        fftParams.dataIn[i][0] = (double) iVecBuffer[i];
+        fftParams.dataIn[i][0] = (double) iVecFFTs[i];
         fftParams.dataIn[i][1] = 0.0;
     }
 

@@ -18,7 +18,7 @@ typedef struct
 {
     // Floating point PCM data
     // Range: [0, 1]
-    std::vector<std::vector<float>>* iVecBuffers;
+    std::vector<std::vector<float>>* iVecFFTs;
 
     // Floating point FFT data
     // Range: [0, 1]

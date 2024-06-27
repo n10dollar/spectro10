@@ -11,4 +11,14 @@ int closestMatchingSampleRate
     int srRef = SR_REF
 );
 
+
+template<typename T>
+void averageVectors
+(
+    std::vector<std::vector<T>>& vecs,
+    std::vector<T>& vecAvg,
+    int numVec,
+    int length
+);
+
 #endif // UTILS_H

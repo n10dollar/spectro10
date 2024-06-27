@@ -50,3 +50,32 @@ int closestMatchingSampleRate
     qDebug() << "Closest matching sample rate to " << srRef << ": " << closest40;
     return closest40;
 }
+
+
+template<typename T>
+void averageVectors
+(
+    std::vector<std::vector<T>>& vecs,
+    std::vector<T>& vecAvg,
+    int numVec,
+    int length
+)
+{
+    for (int i = 0; i < length; i++)
+    {
+        float sumPt = 0;
+        for (auto& vec : vecs)
+            sumPt += vec[i];
+        float avgPt = sumPt / ((float) numVec);
+        vecAvg.push_back((T) avgPt);
+    }
+}
+
+
+template void averageVectors<float>
+(
+    std::vector<std::vector<float>>& vecs,
+    std::vector<float>& vecAvg,
+    int numVec,
+    int length
+);
