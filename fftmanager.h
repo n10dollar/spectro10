@@ -22,9 +22,26 @@ typedef struct
 
     // Floating point FFT data
     // Range: [0, 1]
-    std::vector<std::vector<float>> vecFFTs;
+    std::vector<std::vector<float>> oVecFFTs;
+
+    unsigned int numFFTBuffers;
+    unsigned int fftSize;
 }
 FFTData;
+
+
+typedef struct
+{
+    fftw_plan fftPlan;
+
+    fftw_complex* dataIn;
+    fftw_complex* dataOut;
+
+    unsigned int fftSize;
+    int direction;
+    unsigned int flags;
+}
+FFTParams;
 
 
 class FFTManager : public QObject
@@ -44,7 +61,7 @@ public:
     void FFT
     (
         std::vector<float>& iVecBuffer,
-        std::vector<float>& vecFFT
+        std::vector<float>& oVecFFT
     );
 
     FFTData fftData;
@@ -53,14 +70,7 @@ public slots:
     void update();
 
 private:
-    fftw_plan fftPlan;
-
-    fftw_complex* dataIn;
-    fftw_complex* dataOut;
-
-    unsigned int fftSize;
-    int direction;
-    unsigned int flags;
+    FFTParams fftParams;
 
 signals:
 };

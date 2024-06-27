@@ -9,6 +9,7 @@
 typedef struct
 {
     StreamData* streamData;
+    FFTData* fftData;
 
     std::vector<float> iVecAvg;
     std::vector<float> oVecAvg;
