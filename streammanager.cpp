@@ -11,57 +11,73 @@ StreamManager::StreamManager
     unsigned int bufferSize,
     QObject *parent
 )
-    : audioFormat(audioFormat), bufferSize(bufferSize), QObject{parent}
+    : QObject{parent}
 {
-    std::vector<unsigned int> deviceIds = rtAudio.getDeviceIds();
-    if (deviceIds.empty())
-        qDebug() << "No audio devices found!";
+    // StreamData config
+    {
 
-    for (unsigned int id : deviceIds)
-        qDebug() << id << ": " << rtAudio.getDeviceInfo(id).name;
+    }
 
-    // Set input device
-    streamParams.inputParameters.deviceId = rtAudio.getDefaultInputDevice();
+    // Get device
+        std::vector<unsigned int> deviceIds = rtAudio.getDeviceIds();
+        if (deviceIds.empty())
+            qDebug() << "No audio devices found!";
 
-    // Set output device
-    streamParams.outputParameters.deviceId = rtAudio.getDefaultOutputDevice();
+        for (unsigned int id : deviceIds)
+            qDebug() << id << ": " << rtAudio.getDeviceInfo(id).name;
 
-    // Get input/output device info
-    RtAudio::DeviceInfo infoInput = rtAudio.getDeviceInfo(streamParams.inputParameters.deviceId);
-    RtAudio::DeviceInfo infoOutput = rtAudio.getDeviceInfo(streamParams.outputParameters.deviceId);
+        // Get input device
+        int deviceInput = rtAudio.getDefaultInputDevice();
 
-    // Log device info
-    qDebug() << "Default Input Device: " << infoInput.name;
-    qDebug() << "Default Output Device: " << infoOutput.name;
+        // Get output device
+        int deviceOutput = rtAudio.getDefaultOutputDevice();
 
-    qDebug() << "Num Input Channels: " << infoInput.inputChannels;
-    qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
+        // Get input/output device info
+        RtAudio::DeviceInfo infoInput = rtAudio.getDeviceInfo(streamParams.inputParameters.deviceId);
+        RtAudio::DeviceInfo infoOutput = rtAudio.getDeviceInfo(streamParams.outputParameters.deviceId);
 
-    // Set data fields
-    sampleRate = closestMatchingSampleRate(infoInput.sampleRates, infoOutput.sampleRates);
+        // Log device info
+        qDebug() << "Default Input Device: " << infoInput.name;
+        qDebug() << "Default Output Device: " << infoOutput.name;
 
-    // Set input/output channels
-    numInputChannels = infoInput.inputChannels;
-    numOutputChannels = infoOutput.outputChannels;
+        qDebug() << "Num Input Channels: " << infoInput.inputChannels;
+        qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
 
-    streamParams.inputParameters.nChannels = numInputChannels;
-    streamParams.outputParameters.nChannels = numOutputChannels;
+    // Configure input/output params
+        streamParams.inputParameters.deviceId = deviceInput;
+        streamParams.outputParameters.deviceId = deviceOutput;
 
-    // Set frame params
-    streamParams.audioFormat = audioFormat;
-    streamParams.sampleRate = sampleRate;
-    streamParams.bufferFrames = bufferSize;
+        streamData.numInputChannels = infoInput.inputChannels;
+        streamParams.inputParameters.nChannels = infoInput.inputChannels;
 
-    // Set callback function
-    streamParams.audioCallback = &nullCallback;
+        streamData.numOutputChannels = infoOutput.outputChannels;
+        streamParams.outputParameters.nChannels = infoOutput.outputChannels;
 
-    // Set additional data params
-    streamParams.userData = &callbackData;
-    // streamParams.options = ?;
+    // Configure data params
+        streamData.audioFormat = audioFormat;
+        streamParams.audioFormat = audioFormat;
 
-    // Configure vector buffers
-    callbackData.iVecBuffer.resize(bufferSize);
-    callbackData.oVecBuffer.resize(bufferSize);
+        int sampleRate = closestMatchingSampleRate(infoInput.sampleRates, infoOutput.sampleRates);
+        streamData.sampleRate = sampleRate;
+        streamParams.sampleRate = sampleRate;
+
+        streamData.bufferSize = bufferSize;
+        streamParams.bufferFrames = bufferSize;
+
+    // Configure vector buffer channels
+        streamData.iVecBuffers.resize(streamData.numInputChannels);
+        streamData.oVecBuffers.resize(streamData.numOutputChannels);
+
+        // Set vector buffers size
+        for (auto& iVecBuffer : streamData.iVecBuffers)
+            iVecBuffer.resize(bufferSize);
+        for (auto& oVecBuffer : streamData.oVecBuffers)
+            oVecBuffer.resize(bufferSize);
+
+    // Set additional StreamParams
+        streamParams.audioCallback = &nullCallback;
+        streamParams.userData = &streamData;
+        // streamParams.options = ?;
 }
 
 
@@ -121,11 +137,16 @@ int StreamManager::nullCallback
 {
     auto iBuffer = (int *) inputBuffer;
     auto oBuffer = (int *) outputBuffer;
-    auto callbackData = (CallbackData *) data;
+    auto streamData = (StreamData *) data;
 
     // qDebug() << "Stream pt (int) " << nBufferFrames / 2 << ": " << iBuffer[nBufferFrames / 2];
-    for (int i = 0; i < nBufferFrames; i++)
-        callbackData->iVecBuffer[i] = ((float) iBuffer[i]) / ((float) INT32_MAX);
+    for (int s = 0; s < nBufferFrames; s++)
+        for (int c = 0; c < streamData->numInputChannels; c++)
+        {
+            int sample = iBuffer[s * streamData->numInputChannels + c];
+            float sampleNormalized = ((float) sample) / ((float) INT32_MAX);
+            streamData->iVecBuffers[c][s] = sampleNormalized;
+        }
     // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << callbackData->iVecBuffer[nBufferFrames / 2];
     \
     return 0;

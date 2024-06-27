@@ -6,6 +6,16 @@
 #include "streammanager.h"
 #include "fftmanager.h"
 
+typedef struct
+{
+    StreamData* streamData;
+
+    std::vector<float> iVecAvg;
+    std::vector<float> oVecAvg;
+}
+AudioData;
+
+
 class AudioProcessor : public QObject
 {
     Q_OBJECT
@@ -15,7 +25,10 @@ public:
     StreamManager streamManager;
     FFTManager fftManager;
 
-signals:
+    AudioData audioData;
+
+public slots:
+    void update();
 };
 
 #endif // AUDIOPROCESSOR_H

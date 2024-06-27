@@ -14,6 +14,23 @@
 
 typedef struct
 {
+    // Floating point PCM data
+    // Range: [-1, 1]
+    std::vector<std::vector<float>> iVecBuffers;
+    std::vector<std::vector<float>> oVecBuffers;
+
+    RtAudioFormat audioFormat;
+    unsigned int sampleRate;
+    unsigned int bufferSize;
+
+    unsigned int numInputChannels;
+    unsigned int numOutputChannels;
+}
+StreamData;
+
+
+typedef struct
+{
     RtAudio::StreamParameters inputParameters;
     RtAudio::StreamParameters outputParameters;
 
@@ -22,21 +39,10 @@ typedef struct
     unsigned int bufferFrames;
 
     RtAudioCallback audioCallback;
-
     void* userData;
     RtAudio::StreamOptions options;
 }
 StreamParams;
-
-
-typedef struct
-{
-    // Floating point PCM data
-    // Range: [-1, 1]
-    std::vector<float> iVecBuffer;
-    std::vector<float> oVecBuffer;
-}
-CallbackData;
 
 
 class StreamManager : public QObject
@@ -50,14 +56,7 @@ public:
         QObject *parent = nullptr
     );
 
-    CallbackData callbackData;
-
-    RtAudioFormat audioFormat;
-    unsigned int sampleRate;
-    unsigned int bufferSize;
-
-    unsigned int numInputChannels;
-    unsigned int numOutputChannels;
+    StreamData streamData;
 
 public slots:
     void openStream();

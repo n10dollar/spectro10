@@ -18,11 +18,11 @@ typedef struct
 {
     // Floating point PCM data
     // Range: [0, 1]
-    std::vector<float>* iVecBuffer;
+    std::vector<std::vector<float>>* iVecBuffers;
 
     // Floating point FFT data
     // Range: [0, 1]
-    std::vector<float> vecFFT;
+    std::vector<std::vector<float>> vecFFTs;
 }
 FFTData;
 
@@ -33,7 +33,7 @@ class FFTManager : public QObject
 public:
     explicit FFTManager
     (
-        std::vector<float>* iVecBuffer,
+        std::vector<std::vector<float>>* iVecBuffers,
         unsigned int fftSize = FFT_SIZE,
         int direction = FFT_DIRECTION,
         unsigned int flags = FFT_FLAGS,
@@ -41,7 +41,11 @@ public:
     );
     ~FFTManager();
 
-    void FFT();
+    void FFT
+    (
+        std::vector<float>& iVecBuffer,
+        std::vector<float>& vecFFT
+    );
 
     FFTData fftData;
 

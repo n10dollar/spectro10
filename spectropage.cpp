@@ -8,8 +8,8 @@ SpectroPage::SpectroPage(AudioProcessor* audioProcessor, QWidget *parent)
     : QWidget{parent},
     audioProcessor(audioProcessor),
     controlsMenu(audioProcessor),
-    preOscilliscope(&audioProcessor->streamManager.callbackData.iVecBuffer),
-    postOscilliscope(&audioProcessor->streamManager.callbackData.oVecBuffer),
+    preOscilliscope(&audioProcessor->streamManager.streamData.iVecBuffer),
+    postOscilliscope(&audioProcessor->streamManager.streamData.oVecBuffer),
     preSpectrogram(&audioProcessor->fftManager.fftData.vecFFT),
     postSpectrogram(&audioProcessor->fftManager.fftData.vecFFT)
 {
