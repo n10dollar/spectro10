@@ -9,7 +9,14 @@ class Spectrogram : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Spectrogram(std::vector<float>* dataStream, QWidget *parent = nullptr);
+    explicit Spectrogram
+    (
+        std::vector<float>* dataStream,
+        int dimWidth,
+        int dimHeight,
+        QColor background,
+        QWidget *parent = nullptr
+    );
 
 public slots:
     void update();
@@ -19,6 +26,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
+    // Range: [0, 1]
     std::vector<float>* dataStream;
 
     // Core painting/drawing functionality
@@ -28,6 +36,9 @@ private:
     // QPainter helper QObjects
     QPainter painter;
     QBrush background;
+
+    int dimWidth;
+    int dimHeight;
 };
 
 #endif // SPECTROGRAM_H

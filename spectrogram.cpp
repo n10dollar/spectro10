@@ -4,10 +4,22 @@
 #include <QDebug>
 #include <cmath>
 
-Spectrogram::Spectrogram(std::vector<float>* dataStream, QWidget *parent)
-    : QWidget{parent}, dataStream(dataStream), background(QColor(100, 100, 0))
+Spectrogram::Spectrogram
+(
+    std::vector<float>* dataStream,
+    int dimWidth,
+    int dimHeight,
+    QColor background,
+    QWidget *parent
+)
+    :
+    QWidget{parent},
+    dataStream(dataStream),
+    dimWidth(dimWidth),
+    dimHeight(dimHeight),
+    background(background)
 {
-    setFixedSize(dataStream->size(), 200);
+    setFixedSize(dimWidth, dimHeight);
 }
 
 
@@ -15,7 +27,7 @@ Spectrogram::Spectrogram(std::vector<float>* dataStream, QWidget *parent)
 void Spectrogram::update()
 {
     QWidget::update();
-    // qDebug() << "Spectrogram updating!";
+    // qDebug() << "Spectrogram updated!";
 };
 
 
@@ -33,12 +45,11 @@ void Spectrogram::paintLinear(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    for (int s = 0; s < dataStream->size() / 2; s++)
+    for (int s = 0; s < dataStream->size(); s++)
     {
-        unsigned int point = (*dataStream)[s] * 3;
-        // qDebug() << "Spectrogram pt " << dataStream->size() / 2 << ": " << point;
-        painter->drawLine(2 * s, height(), 2 * s, height() - point);
-        painter->drawLine(2 * s + 1, height(), 2 * s + 1, height() - point);
+        int x = (((float) s) / ((float) dataStream->size())) * dimWidth;
+        int y = (*dataStream)[x] * dimHeight;
+        painter->drawLine(x, dimHeight, x, dimHeight - y);
     }
 }
 
@@ -47,19 +58,17 @@ void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    for (int s = 0; s < dataStream->size() / 2; s++)
+    for (int x = 0; x < dataStream->size(); x++)
     {
-        unsigned int y = (*dataStream)[s] * 3;
-        // qDebug() << "Spectrogram pt " << dataStream->size() / 2 << ": " << point;
-        int logXs =
-            (((float) std::log10(2 * s)) /
+        int y = (*dataStream)[x] * dimHeight;
+        int logXstart =
+            (((float) std::log10(x)) /
             ((float) std::log10(dataStream->size()))) *
-            dataStream->size();
-        int logXe =
-            (((float) std::log10(2 * (s + 1))) /
-             ((float) std::log10(dataStream->size()))) *
-            dataStream->size();
-        painter->drawRect(logXs, height()- y, logXe - logXs, height());
-        // painter->drawLine(2 * s + 1, height(), 2 * s + 1, height() - point);
+            dimWidth;
+        int logXend =
+            (((float) std::log10(x + 1)) /
+            ((float) std::log10(dataStream->size()))) *
+            dimWidth;
+        painter->drawRect(logXstart, dimHeight - y, logXend - logXstart, dimHeight);
     }
 }
