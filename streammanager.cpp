@@ -146,8 +146,7 @@ int StreamManager::nullCallback
         for (int c = 0; c < streamData->numInputChannels; c++)
         {
             int sample = iBuffer[s * streamData->numInputChannels + c];
-            float sampleNormalized = ((float) sample) / ((float) INT32_MAX);
-            streamData->iVecBuffers[c][s] = sampleNormalized;
+            streamData->iVecBuffers[c][s] = sample;
         }
     // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << callbackData->iVecBuffer[nBufferFrames / 2];
     \

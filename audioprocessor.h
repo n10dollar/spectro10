@@ -11,7 +11,11 @@ typedef struct
     StreamData* streamData;
     FFTData* fftData;
 
-    // Range: [-1, 1]
+    // Range: [0, 1]
+    std::vector<std::vector<float>> iVecBuffersNormalized;
+    std::vector<std::vector<float>> oVecBuffersNormalized;
+
+    // Range: [0, 1]
     std::vector<float> iVecBufferAvg;
     std::vector<float> oVecBufferAvg;
 
@@ -31,15 +35,16 @@ class AudioProcessor : public QObject
 public:
     explicit AudioProcessor(QObject *parent = nullptr);
 
+    AudioData audioData;
+
     StreamManager streamManager;
     FFTManager fftManager;
-
-    AudioData audioData;
 
 public slots:
     void update();
 
 private:
+    void streamBuffersNormalize();
     void calculateAverages();
     void processOscilliscope();
     void processSpectrogram();
