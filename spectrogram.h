@@ -5,6 +5,10 @@
 #include <QPainter>
 #include <vector>
 
+#define WIDTH 400
+#define HEIGHT 200
+#define BACKGROUND QColor(100, 100, 100)
+
 class Spectrogram : public QWidget
 {
     Q_OBJECT
@@ -12,9 +16,9 @@ public:
     explicit Spectrogram
     (
         std::vector<float>* dataStream,
-        int dimWidth,
-        int dimHeight,
-        QColor background,
+        int dimWidth = WIDTH,
+        int dimHeight = HEIGHT,
+        QColor background = BACKGROUND,
         QWidget *parent = nullptr
     );
 

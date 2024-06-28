@@ -11,19 +11,26 @@ AudioProcessor::AudioProcessor(QObject *parent)
     audioData.iVecBufferAvg.resize(audioData.streamData->bufferSize);
     audioData.oVecBufferAvg.resize(audioData.streamData->bufferSize);
 
-    audioData.iVecFFTAvg.resize(audioData.fftData->fftSize);
     audioData.oVecFFTAvg.resize(audioData.fftData->fftSize);
+
+    audioData.vecOscilliscope.resize(audioData.streamData->bufferSize);
+    // Cut off at Nyquist bin
+    audioData.vecSpectrogram.resize(audioData.fftData->fftSize / 2);
 }
 
 
 void AudioProcessor::update()
 {
     fftManager.update();
-    createAverages();
+
+    calculateAverages();
+
+    processOscilliscope();
+    processSpectrogram();
 }
 
 
-void AudioProcessor::createAverages()
+void AudioProcessor::calculateAverages()
 {
     averageVectors<float>
     (
@@ -48,4 +55,18 @@ void AudioProcessor::createAverages()
         audioData.fftData->numFFTBuffers,
         audioData.fftData->fftSize
     );
+}
+
+
+void AudioProcessor::processOscilliscope()
+{
+    for(int i = 0; i < audioData.vecOscilliscope.size(); i++)
+        audioData.vecOscilliscope[i] = (audioData.iVecBufferAvg[i] + 1.0f) / 2.0f;
+}
+
+
+void AudioProcessor::processSpectrogram()
+{
+    for(int i = 0; i < audioData.vecSpectrogram.size(); i++)
+        audioData.vecSpectrogram[i] = audioData.oVecFFTAvg[i] / ((float) audioData.fftData->fftSize);
 }

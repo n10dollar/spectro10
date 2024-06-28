@@ -13,11 +13,11 @@ Spectrogram::Spectrogram
     QWidget *parent
 )
     :
-    QWidget{parent},
     dataStream(dataStream),
     dimWidth(dimWidth),
     dimHeight(dimHeight),
-    background(background)
+    background(background),
+    QWidget{parent}
 {
     setFixedSize(dimWidth, dimHeight);
 }
