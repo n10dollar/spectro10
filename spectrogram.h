@@ -5,10 +5,10 @@
 #include <QPainter>
 #include <vector>
 
-#define WIDTH 400
-#define HEIGHT 200
-#define BACKGROUND QColor(100, 100, 100)
-#define BINS QColor(255, 255, 255)
+#define SPECTROGRAM_WIDTH 400
+#define SPECTROGRAM_HEIGHT 200
+#define SPECTROGRAM_BACKGROUND QColor(100, 100, 100)
+#define SPECTROGRAM_BINS QColor(255, 255, 255)
 
 #define LOG_ZERO .8f
 
@@ -19,10 +19,10 @@ public:
     explicit Spectrogram
     (
         std::vector<float>* dataStream,
-        int dimWidth = WIDTH,
-        int dimHeight = HEIGHT,
-        QColor background = BACKGROUND,
-        QColor bins = BINS,
+        int dimWidth = SPECTROGRAM_WIDTH,
+        int dimHeight = SPECTROGRAM_HEIGHT,
+        QColor background = SPECTROGRAM_BACKGROUND,
+        QColor bins = SPECTROGRAM_BINS,
         QWidget *parent = nullptr
     );
 

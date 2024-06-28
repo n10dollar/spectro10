@@ -5,9 +5,9 @@
 #include <QPainter>
 #include <vector>
 
-#define WIDTH 400
-#define HEIGHT 50
-#define BACKGROUND QColor(100, 100, 100)
+#define OSCILLOSCOPE_WIDTH 400
+#define OSCILLOSCOPE_HEIGHT 50
+#define OSCILLOSCOPE_BACKGROUND QColor(100, 100, 100)
 
 class Oscilloscope : public QWidget
 {
@@ -16,9 +16,9 @@ public:
     explicit Oscilloscope
     (
         std::vector<float>* dataStream,
-        int dimWidth = WIDTH,
-        int dimHeight = HEIGHT,
-        QColor background = BACKGROUND,
+        int dimWidth = OSCILLOSCOPE_WIDTH,
+        int dimHeight = OSCILLOSCOPE_HEIGHT,
+        QColor background = OSCILLOSCOPE_BACKGROUND,
         QWidget *parent = nullptr
     );
 
