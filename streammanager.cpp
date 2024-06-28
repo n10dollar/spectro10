@@ -13,11 +13,6 @@ StreamManager::StreamManager
 )
     : QObject{parent}
 {
-    // StreamData config
-    {
-
-    }
-
     // Get device
         std::vector<unsigned int> deviceIds = rtAudio.getDeviceIds();
         if (deviceIds.empty())
@@ -33,8 +28,8 @@ StreamManager::StreamManager
         int deviceOutput = rtAudio.getDefaultOutputDevice();
 
         // Get input/output device info
-        RtAudio::DeviceInfo infoInput = rtAudio.getDeviceInfo(streamParams.inputParameters.deviceId);
-        RtAudio::DeviceInfo infoOutput = rtAudio.getDeviceInfo(streamParams.outputParameters.deviceId);
+        RtAudio::DeviceInfo infoInput = rtAudio.getDeviceInfo(deviceInput);
+        RtAudio::DeviceInfo infoOutput = rtAudio.getDeviceInfo(deviceOutput);
 
         // Log device info
         qDebug() << "Default Input Device: " << infoInput.name;

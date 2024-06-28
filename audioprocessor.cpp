@@ -4,14 +4,22 @@
 
 AudioProcessor::AudioProcessor(QObject *parent)
     : QObject{parent}, fftManager(&streamManager.streamData.iVecBuffers)
-{}
+{
+    audioData.streamData = &streamManager.streamData;
+    audioData.fftData = &fftManager.fftData;
+
+    audioData.iVecBufferAvg.resize(audioData.streamData->bufferSize);
+    audioData.oVecBufferAvg.resize(audioData.streamData->bufferSize);
+
+    audioData.iVecFFTAvg.resize(audioData.fftData->fftSize);
+    audioData.oVecFFTAvg.resize(audioData.fftData->fftSize);
+}
 
 
 void AudioProcessor::update()
 {
-    createAverages();
-
     fftManager.update();
+    createAverages();
 }
 
 

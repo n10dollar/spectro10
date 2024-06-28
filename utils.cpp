@@ -67,7 +67,7 @@ void averageVectors
         for (auto& vec : vecs)
             sumPt += vec[i];
         float avgPt = sumPt / ((float) numVec);
-        vecAvg.push_back((T) avgPt);
+        vecAvg[i] = (T) avgPt;
     }
 }
 
