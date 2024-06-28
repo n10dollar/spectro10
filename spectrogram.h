@@ -8,6 +8,7 @@
 #define WIDTH 400
 #define HEIGHT 200
 #define BACKGROUND QColor(100, 100, 100)
+#define BINS QColor(255, 255, 255)
 
 #define LOG_ZERO .8f
 
@@ -21,6 +22,7 @@ public:
         int dimWidth = WIDTH,
         int dimHeight = HEIGHT,
         QColor background = BACKGROUND,
+        QColor bins = BINS,
         QWidget *parent = nullptr
     );
 
@@ -42,6 +44,7 @@ private:
     // QPainter helper QObjects
     QPainter painter;
     QBrush background;
+    QBrush bins;
 
     int dimWidth;
     int dimHeight;

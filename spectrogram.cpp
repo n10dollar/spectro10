@@ -10,6 +10,7 @@ Spectrogram::Spectrogram
     int dimWidth,
     int dimHeight,
     QColor background,
+    QColor bins,
     QWidget *parent
 )
     :
@@ -17,6 +18,7 @@ Spectrogram::Spectrogram
     dimWidth(dimWidth),
     dimHeight(dimHeight),
     background(background),
+    bins(bins),
     QWidget{parent}
 {
     setFixedSize(dimWidth, dimHeight);
@@ -70,5 +72,6 @@ void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
             ((float) std::log10(dataStream->size()))) *
             dimWidth;
         painter->drawRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight);
+        // painter->fillRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight, bins);
     }
 }
