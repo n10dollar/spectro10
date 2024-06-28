@@ -11,43 +11,46 @@ int closestMatchingSampleRate
     int srRef
 )
 {
-    std::vector<unsigned int> inputCopy(sRateInput);
-    std::vector<unsigned int> outputCopy(sRateOutput);
+    std::vector<unsigned int> inputSortedCopy(sRateInput);
+    std::vector<unsigned int> outputSortedCopy(sRateOutput);
 
-    std::sort(inputCopy.begin(), inputCopy.end());
-    std::sort(outputCopy.begin(), outputCopy.end());
+    std::sort(inputSortedCopy.begin(), inputSortedCopy.end());
+    std::sort(outputSortedCopy.begin(), outputSortedCopy.end());
 
-    std::vector<int> matching;
+    std::vector<int> matchingSampleRates;
 
-    int iInput = inputCopy.size() - 1;
-    int iOutput = outputCopy.size() - 1;
+    int iInput = inputSortedCopy.size() - 1;
+    int iOutput = outputSortedCopy.size() - 1;
 
     while (iInput >= 0 && iOutput >= 0)
     {
-        if (sRateInput[iInput] == sRateInput[iOutput])
+        if (inputSortedCopy[iInput] == outputSortedCopy[iOutput])
         {
-            matching.push_back(sRateInput[iInput]);
+            matchingSampleRates.push_back(sRateInput[iInput]);
             iOutput--;
             iInput--;
         }
-        else if (sRateInput[iInput] < sRateInput[iOutput])
+        else if (inputSortedCopy[iInput] < outputSortedCopy[iOutput])
             iOutput--;
-        else if (sRateInput[iInput] > sRateInput[iOutput])
+        else if (inputSortedCopy[iInput] > outputSortedCopy[iOutput])
             iInput--;
     }
+
+    qDebug() << "Matching Sample Rates:";
+    qDebug() << matchingSampleRates;
 
     // no match: -1
     int closest40 = -1;
     int minAbsVal = INT_MAX;
 
-    for (int sampleRate : matching)
+    for (int sampleRate : matchingSampleRates)
         if (std::abs(sampleRate - srRef) < minAbsVal)
         {
             minAbsVal = std::abs(sampleRate - srRef);
             closest40 = sampleRate;
         }
 
-    qDebug() << "Closest matching sample rate to " << srRef << ": " << closest40;
+    qDebug() << "Closest matching sample rate to" << srRef << ":" << closest40;
     return closest40;
 }
 

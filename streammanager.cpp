@@ -38,6 +38,13 @@ StreamManager::StreamManager
         qDebug() << "Num Input Channels: " << infoInput.inputChannels;
         qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
 
+        qDebug() << "Input Sample Rates:";
+        for (auto& sampleRate : infoInput.sampleRates)
+            qDebug() << sampleRate;
+        qDebug() << "Output Sample Rates:";
+        for (auto& sampleRate : infoOutput.sampleRates)
+            qDebug() << sampleRate;
+
     // Configure input/output params
         streamParams.inputParameters.deviceId = deviceInput;
         streamParams.outputParameters.deviceId = deviceOutput;
