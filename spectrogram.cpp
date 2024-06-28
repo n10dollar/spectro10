@@ -22,13 +22,27 @@ void Spectrogram::update()
 void Spectrogram::paintEvent(QPaintEvent *event)
 {
     painter.begin(this);
-    paint(&painter, event);
+    paintLogarithmic(&painter, event);
     painter.end();
 }
 
 
 // =========== Class methods ===========
-void Spectrogram::paint(QPainter* painter, QPaintEvent* event)
+void Spectrogram::paintLinear(QPainter* painter, QPaintEvent* event)
+{
+    painter->fillRect(event->rect(), background);
+
+    for (int s = 0; s < dataStream->size() / 2; s++)
+    {
+        unsigned int point = (*dataStream)[s] * 3;
+        // qDebug() << "Spectrogram pt " << dataStream->size() / 2 << ": " << point;
+        painter->drawLine(2 * s, height(), 2 * s, height() - point);
+        painter->drawLine(2 * s + 1, height(), 2 * s + 1, height() - point);
+    }
+}
+
+
+void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 

@@ -22,7 +22,8 @@ private:
     std::vector<float>* dataStream;
 
     // Core painting/drawing functionality
-    void paint(QPainter* painter, QPaintEvent* event);
+    void paintLinear(QPainter* painter, QPaintEvent* event);
+    void paintLogarithmic(QPainter* painter, QPaintEvent* event);
 
     // QPainter helper QObjects
     QPainter painter;
