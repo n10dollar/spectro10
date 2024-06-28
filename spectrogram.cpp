@@ -58,9 +58,9 @@ void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    for (int x = 0; x < dataStream->size(); x++)
+    for (int x = 1; x < dataStream->size(); x++)
     {
-        int y = (*dataStream)[x] * dimHeight;
+        int logY = LOG_ZERO * ((float) dimHeight) + std::log10((*dataStream)[x]) * ((1 - LOG_ZERO) * ((float) dimHeight));
         int logXstart =
             (((float) std::log10(x)) /
             ((float) std::log10(dataStream->size()))) *
@@ -69,6 +69,6 @@ void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
             (((float) std::log10(x + 1)) /
             ((float) std::log10(dataStream->size()))) *
             dimWidth;
-        painter->drawRect(logXstart, dimHeight - y, logXend - logXstart, dimHeight);
+        painter->drawRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight);
     }
 }

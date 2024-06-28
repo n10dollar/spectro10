@@ -88,7 +88,7 @@ void FFTManager::FFT
             std::pow(fftParams.dataOut[i][1], 2)
         );
 
-    qDebug() << "FFT pt (float) "
-             << 2
-             << oVecFFT[2];
+    // qDebug() << "FFT pt (float) "
+    //          << 2
+    //          << oVecFFT[2];
 }

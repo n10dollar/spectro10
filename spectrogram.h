@@ -9,6 +9,8 @@
 #define HEIGHT 200
 #define BACKGROUND QColor(100, 100, 100)
 
+#define LOG_ZERO .8f
+
 class Spectrogram : public QWidget
 {
     Q_OBJECT
