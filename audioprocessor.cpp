@@ -1,9 +1,11 @@
 #include "audioprocessor.h"
 
+#include <QDebug>
+
 #include "utils.h"
 
 AudioProcessor::AudioProcessor(QObject *parent)
-    : QObject{parent}, fftManager(&audioData.iVecBuffersNormalized)
+    : QObject{parent}, fftManager(&audioData.iVecBuffersNormalized, streamManager.streamData.numInputChannels)
 {
     audioData.streamData = &streamManager.streamData;
     audioData.fftData = &fftManager.fftData;
@@ -47,6 +49,10 @@ void AudioProcessor::streamBuffersNormalize()
     for (int c = 0; c < audioData.streamData->numInputChannels; c++)
         for (int s = 0; s < audioData.streamData->bufferSize; s++)
             audioData.iVecBuffersNormalized[c][s] = (audioData.streamData->iVecBuffers[c][s] + 1.0f) / 2.0f;
+
+    // qDebug() << "Stream pt (float) "
+    //          << audioData.streamData->bufferSize / 2 << ": "
+    //          << audioData.iVecBuffersNormalized[0][audioData.streamData->bufferSize / 2];
 
     // for (int c = 0; c < audioData.streamData->numOutputChannels; c++)
     //     for (int s = 0; s < audioData.streamData->bufferSize; s++)
@@ -92,5 +98,5 @@ void AudioProcessor::processOscilliscope()
 void AudioProcessor::processSpectrogram()
 {
     for (int i = 0; i < audioData.vecSpectrogram.size(); i++)
-        audioData.vecSpectrogram[i] = audioData.oVecFFTAvg[i] / ((float) audioData.fftData->fftSize);
+        audioData.vecSpectrogram[i] = audioData.oVecFFTAvg[i] / audioData.fftData->fftSize;
 }

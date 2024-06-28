@@ -1,10 +1,12 @@
 #include "fftmanager.h"
 
 #include <cmath>
+#include <QDebug>
 
 FFTManager::FFTManager
 (
     std::vector<std::vector<float>>* iVecFFTs,
+    unsigned int numFFTBuffers,
     unsigned int fftSize,
     int direction,
     unsigned int flags,
@@ -13,7 +15,7 @@ FFTManager::FFTManager
     : QObject{parent}
 {
     // Configure data params
-        fftData.numFFTBuffers = iVecFFTs->size();
+        fftData.numFFTBuffers = numFFTBuffers;
 
         fftData.fftSize = fftSize;
         fftParams.fftSize = fftSize;
@@ -56,6 +58,8 @@ void FFTManager::update()
 {
     for (int i = 0; i < fftData.numFFTBuffers; i++)
         FFT((*iVecFFTs)[i], fftData.oVecFFTs[i]);
+
+    // qDebug() << "FFT updated!";
 }
 
 
@@ -63,14 +67,14 @@ void FFTManager::update()
 // vecOut: magnitudes of signal FFT
 void FFTManager::FFT
 (
-    std::vector<float>& iVecFFTs,
+    std::vector<float>& iVecFFT,
     std::vector<float>& oVecFFT
 )
 {
     // copy vecIn into dataIn
     for (int i = 0; i < fftParams.fftSize; i++)
     {
-        fftParams.dataIn[i][0] = (double) iVecFFTs[i];
+        fftParams.dataIn[i][0] = (double) iVecFFT[i];
         fftParams.dataIn[i][1] = 0.0;
     }
 
@@ -83,4 +87,8 @@ void FFTManager::FFT
             std::pow(fftParams.dataOut[i][0], 2) +
             std::pow(fftParams.dataOut[i][1], 2)
         );
+
+    qDebug() << "FFT pt (float) "
+             << 2
+             << oVecFFT[2];
 }

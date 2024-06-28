@@ -16,8 +16,6 @@
 
 typedef struct
 {
-    // Floating point FFT data
-    // Range: [0, 1]
     std::vector<std::vector<float>> oVecFFTs;
 
     unsigned int numFFTBuffers;
@@ -47,6 +45,7 @@ public:
     explicit FFTManager
     (
         std::vector<std::vector<float>>* iVecBuffers,
+        unsigned int numFFTBuffers,
         unsigned int fftSize = FFT_SIZE,
         int direction = FFT_DIRECTION,
         unsigned int flags = FFT_FLAGS,
@@ -56,7 +55,7 @@ public:
 
     void FFT
     (
-        std::vector<float>& iVecBuffer,
+        std::vector<float>& iVecFFT,
         std::vector<float>& oVecFFT
     );
 

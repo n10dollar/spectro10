@@ -137,18 +137,17 @@ int StreamManager::nullCallback
     void *data
 )
 {
-    auto iBuffer = (int *) inputBuffer;
-    auto oBuffer = (int *) outputBuffer;
+    auto iBuffer = (float *) inputBuffer;
+    auto oBuffer = (float *) outputBuffer;
     auto streamData = (StreamData *) data;
 
-    // qDebug() << "Stream pt (int) " << nBufferFrames / 2 << ": " << iBuffer[nBufferFrames / 2];
+    // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << iBuffer[nBufferFrames / 2];
     for (int s = 0; s < nBufferFrames; s++)
         for (int c = 0; c < streamData->numInputChannels; c++)
         {
-            int sample = iBuffer[s * streamData->numInputChannels + c];
+            float sample = iBuffer[s * streamData->numInputChannels + c];
             streamData->iVecBuffers[c][s] = sample;
         }
-    // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << callbackData->iVecBuffer[nBufferFrames / 2];
     \
     return 0;
 }

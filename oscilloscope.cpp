@@ -48,6 +48,6 @@ void Oscilloscope::paint(QPainter* painter, QPaintEvent* event)
     {
         int x = (((float) s) / ((float) dataStream->size())) * dimWidth;
         int y = (*dataStream)[x] * dimHeight;
-        painter->drawLine(x, dimHeight, x, dimHeight - y);
+        painter->drawLine(x, dimHeight / 2, x, dimHeight - y);
     }
 }
