@@ -36,7 +36,7 @@ FFTManager::FFTManager
         );
 
     // Configure FFT input/output
-        fftData.iVecFFTs = iVecFFTs;
+        this->iVecFFTs = iVecFFTs;
 
         // Resize vecFFTs based iVecBuffers input
         fftData.oVecFFTs.resize(fftData.numFFTBuffers);
@@ -55,7 +55,7 @@ FFTManager::~FFTManager()
 void FFTManager::update()
 {
     for (int i = 0; i < fftData.numFFTBuffers; i++)
-        FFT((*fftData.iVecFFTs)[i], fftData.oVecFFTs[i]);
+        FFT((*iVecFFTs)[i], fftData.oVecFFTs[i]);
 }
 
 

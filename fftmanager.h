@@ -16,10 +16,6 @@
 
 typedef struct
 {
-    // Floating point PCM data
-    // Range: [0, 1]
-    std::vector<std::vector<float>>* iVecFFTs;
-
     // Floating point FFT data
     // Range: [0, 1]
     std::vector<std::vector<float>> oVecFFTs;
@@ -71,6 +67,10 @@ public slots:
 
 private:
     FFTParams fftParams;
+
+    // Floating point PCM data
+    // Range: [0, 1]
+    std::vector<std::vector<float>>* iVecFFTs;
 
 signals:
 };
