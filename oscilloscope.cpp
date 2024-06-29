@@ -47,7 +47,7 @@ void Oscilloscope::paint(QPainter* painter, QPaintEvent* event)
     for (int s = 0; s < dataStream->size(); s++)
     {
         int x = (((float) s) / ((float) dataStream->size())) * dimWidth;
-        int y = (*dataStream)[x] * dimHeight;
+        int y = (*dataStream)[s] * dimHeight;
         painter->drawLine(x, dimHeight / 2, x, dimHeight - y);
     }
 }

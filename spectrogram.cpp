@@ -50,7 +50,7 @@ void Spectrogram::paintLinear(QPainter* painter, QPaintEvent* event)
     for (int s = 0; s < dataStream->size(); s++)
     {
         int x = (((float) s) / ((float) dataStream->size())) * dimWidth;
-        int y = (*dataStream)[x] * dimHeight;
+        int y = (*dataStream)[s] * dimHeight;
         painter->drawLine(x, dimHeight, x, dimHeight - y);
     }
 }
@@ -60,17 +60,17 @@ void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
 
-    for (int x = 1; x < dataStream->size(); x++)
+    for (int s = 1; s < dataStream->size(); s++)
     {
-        int logY = LOG_ZERO * ((float) dimHeight) + std::log10((*dataStream)[x]) * ((1 - LOG_ZERO) * ((float) dimHeight));
         int logXstart =
-            (((float) std::log10(x)) /
-            ((float) std::log10(dataStream->size()))) *
+            (((float) std::log10(s)) /
+             ((float) std::log10(dataStream->size()))) *
             dimWidth;
         int logXend =
-            (((float) std::log10(x + 1)) /
-            ((float) std::log10(dataStream->size()))) *
+            (((float) std::log10(s + 1)) /
+             ((float) std::log10(dataStream->size()))) *
             dimWidth;
+        int logY = LOG_ZERO * ((float) dimHeight) + std::log10((*dataStream)[s]) * ((1 - LOG_ZERO) * ((float) dimHeight));
         painter->drawRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight);
         // painter->fillRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight, bins);
     }
