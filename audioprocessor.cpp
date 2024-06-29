@@ -23,11 +23,21 @@ AudioProcessor::AudioProcessor(QObject *parent)
     audioData.iVecBufferAvg.resize(audioData.streamData->bufferSize);
     audioData.oVecBufferAvg.resize(audioData.streamData->bufferSize);
 
+    audioData.oVecFiltered.resize(audioData.streamData->bufferSize);
+
     audioData.oVecFFTAvg.resize(audioData.fftData->fftSize);
 
     audioData.vecOscilliscope.resize(audioData.streamData->bufferSize);
     // Cut off at Nyquist bin
     audioData.vecSpectrogram.resize(audioData.fftData->fftSize / 2);
+
+    // Create filters
+    cycfi::q::lowpass filterLP(2000_Hz, (float) audioData.streamData->bufferSize, .707);
+    cycfi::q::highpass filterHP(2000_Hz, (float) audioData.streamData->bufferSize, .707);
+
+    // Add filters
+    filterData.filters.push_back(filterLP);
+    filterData.filters.push_back(filterHP);
 }
 
 
@@ -35,9 +45,11 @@ void AudioProcessor::update()
 {
     streamBuffersNormalize();
 
-    fftManager.update();
-
     calculateAverages();
+
+    filterStream(audioData.iVecBufferAvg, audioData.oVecFiltered);
+
+    fftManager.update();
 
     processOscilliscope();
     processSpectrogram();
@@ -99,4 +111,24 @@ void AudioProcessor::processSpectrogram()
 {
     for (int i = 0; i < audioData.vecSpectrogram.size(); i++)
         audioData.vecSpectrogram[i] = audioData.oVecFFTAvg[i] / audioData.fftData->fftSize;
+}
+
+
+void AudioProcessor::filterStream
+(
+    std::vector<float>& iVecFilter,
+    std::vector<float>& oVecFilter
+)
+{
+    // Filter signal
+    for (int i = 0; i < iVecFilter.size(); i++)
+    {
+        float centeredPt = 2.0f * iVecFilter[i] - 1.0f;
+        for (auto& filter : filterData.filters)
+            centeredPt = filter(centeredPt);
+        float unCenteredPt = (centeredPt + 1.0f) / 2.0f;
+        oVecFilter[i] = unCenteredPt;
+    }
+
+    // qDebug() << oVecFilter[iVecFilter.size() / 2];
 }

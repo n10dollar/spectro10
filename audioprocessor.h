@@ -3,6 +3,9 @@
 
 #include <QObject>
 
+#include <q/fx/biquad.hpp>
+#include <q/support/literals.hpp>
+
 #include "streammanager.h"
 #include "fftmanager.h"
 
@@ -19,6 +22,9 @@ typedef struct
     std::vector<float> iVecBufferAvg;
     std::vector<float> oVecBufferAvg;
 
+    // Range: [0, 1]
+    std::vector<float> oVecFiltered;
+
     // Range: [0, fftSize]
     std::vector<float> oVecFFTAvg;
 
@@ -29,6 +35,15 @@ typedef struct
 AudioData;
 
 
+using namespace cycfi::q::literals;
+typedef struct
+{
+    // Filters
+    std::vector<cycfi::q::biquad> filters;
+}
+FilterData;
+
+
 class AudioProcessor : public QObject
 {
     Q_OBJECT
@@ -36,9 +51,16 @@ public:
     explicit AudioProcessor(QObject *parent = nullptr);
 
     AudioData audioData;
+    FilterData filterData;
 
     StreamManager streamManager;
     FFTManager fftManager;
+
+    void filterStream
+    (
+        std::vector<float>& iVecFilter,
+        std::vector<float>& oVecFilter
+    );
 
 public slots:
     void update();
