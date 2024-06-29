@@ -5,6 +5,8 @@
 #include <RtAudio.h>
 #include <vector>
 
+#define SAMPLE_RATE_REF 40000
+
 #define AUDIO_FORMAT RTAUDIO_FLOAT32
 #define BUFFER_SIZE 1024
 
@@ -49,6 +51,7 @@ public:
     );
 
     std::vector<RtAudio::DeviceInfo> getAllDevices();
+    std::vector<unsigned int> getAllDeviceIDs();
     RtAudio::DeviceInfo getDeviceInfo(unsigned int deviceID);
 
     void setInputDevice(unsigned int deviceID);
@@ -58,10 +61,8 @@ public:
     RtAudio::DeviceInfo getOutputDevice();
 
     void setSampleRate(unsigned int sampleRate);
-    unsigned int getSampleRate();
-
     void setDefaultSampleRate();
-    unsigned int getDefaultSampleRate();
+    unsigned int getSampleRate();
 
     void setBufferSize(unsigned int bufferSize);
     unsigned int getBufferSize();

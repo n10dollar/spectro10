@@ -84,18 +84,19 @@ void StreamManager::setInputDevice(unsigned int deviceID)
     qDebug() << "Setting input device";
 
     // Check if input device exists
-    std::vector<unsigned int> allDeviceIDs = rtAudio.getDeviceIds();
+    std::vector<unsigned int> allDeviceIDs = getAllDeviceIDs();
     if (vectorContains(allDeviceIDs, deviceID))
     {
         qWarning() << "Input device with id" << deviceID << "doesn't exist";
         return;
     }
 
+    // Set device ID
     streamParams.inputParameters.deviceId = deviceID;
+    streamParams.inputParameters.nChannels = getDeviceInfo(deviceID).inputChannels;
 
-    // Check if outputParams are set
-    if (streamParams.outputParameters.deviceId == 0)
-        qWarning() << "Output device not yet set";
+    // Update sample rate
+    setDefaultSampleRate();
 }
 
 
@@ -104,36 +105,72 @@ void StreamManager::setOutputDevice(unsigned int deviceID)
     qDebug() << "Setting output device";
 
     // Check if output device exists
-    std::vector<unsigned int> allDeviceIDs = rtAudio.getDeviceIds();
+    std::vector<unsigned int> allDeviceIDs = getAllDeviceIDs();
     if (vectorContains(allDeviceIDs, deviceID))
     {
         qWarning() << "Output device with id" << deviceID << "doesn't exist";
         return;
     }
 
+    // Set device ID
     streamParams.outputParameters.deviceId = deviceID;
+    streamParams.outputParameters.nChannels = getDeviceInfo(deviceID).outputChannels;
 
-    // Check if inputParams are set
-    if (streamParams.inputParameters.deviceId == 0)
-        qWarning() << "Input device not yet set";
+    // Update sample rate
+    setDefaultSampleRate();
 }
 
 
 void StreamManager::setSampleRate(unsigned int sampleRate)
 {
-    // Check if sample rate works for input/output devices
-    std::vector<unsigned int> inputSampleRates = getInputDevice().sampleRates;
-    std::vector<unsigned int> outputSampleRates = getOutputDevice().sampleRates;
-    if (!vectorContains(inputSampleRates, sampleRate) || !vectorContains(outputSampleRates, sampleRate))
+    bool sampleRateCompatible = true;
+
+    // Check if input device selected
+    if (streamParams.inputParameters.deviceId == 0)
+        qWarning() << "No input device selected";
+    else
     {
+        // Check if sample rate works for input device
+        std::vector<unsigned int> inputSampleRates = getInputDevice().sampleRates;
         if (!vectorContains(inputSampleRates, sampleRate))
+        {
             qWarning() << "Sample rate of " << sampleRate << "doesn't work for input device" << getInputDevice().ID;
-        if (!vectorContains(outputSampleRates, sampleRate))
-            qWarning() << "Sample rate of " << sampleRate << "doesn't work for output device" << getOutputDevice().ID;
-        return;
+            sampleRateCompatible = false;
+        }
     }
 
-    streamParams.sampleRate = sampleRate;
+    // Check if output device selected
+    if (streamParams.outputParameters.deviceId == 0)
+        qWarning() << "No output device selected";
+    else
+    {
+        // Check if sample rate works for output device
+        std::vector<unsigned int> outputSampleRates = getOutputDevice().sampleRates;
+        if (!vectorContains(outputSampleRates, sampleRate))
+        {
+            qWarning() << "Sample rate of " << sampleRate << "doesn't work for output device" << getOutputDevice().ID;
+            sampleRateCompatible = false;
+        }
+    }
+
+    if (sampleRateCompatible)
+        streamParams.sampleRate = sampleRate;
+}
+
+
+void StreamManager::setDefaultSampleRate()
+{
+    std::vector<std::vector<unsigned int>> inputOutputSampleRates;
+
+    // Check if input device exists
+    if (streamParams.inputParameters.deviceId != 0)
+        inputOutputSampleRates.push_back(getInputDevice().sampleRates);
+    // Check if output device exists
+    if (streamParams.outputParameters.deviceId != 0)
+        inputOutputSampleRates.push_back(getOutputDevice().sampleRates);
+
+    unsigned int defaultSampleRate = closestMatching(inputOutputSampleRates, (unsigned int) SAMPLE_RATE_REF);
+    streamParams.sampleRate = defaultSampleRate;
 }
 
 
