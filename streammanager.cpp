@@ -38,12 +38,8 @@ StreamManager::StreamManager
         qDebug() << "Num Input Channels: " << infoInput.inputChannels;
         qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
 
-        qDebug() << "Input Sample Rates:";
-        for (auto& sampleRate : infoInput.sampleRates)
-            qDebug() << sampleRate;
-        qDebug() << "Output Sample Rates:";
-        for (auto& sampleRate : infoOutput.sampleRates)
-            qDebug() << sampleRate;
+        qDebug() << "Input Sample Rates: " << infoInput.sampleRates;
+        qDebug() << "Output Sample Rates: " << infoOutput.sampleRates;
 
     // Configure input/output params
         streamParams.inputParameters.deviceId = deviceInput;
@@ -77,43 +73,106 @@ StreamManager::StreamManager
             oVecBuffer.resize(bufferSize);
 
     // Set additional StreamParams
-        streamParams.audioCallback = &nullCallback;
+        streamParams.audioCallback = &callback;
         streamParams.userData = &streamData;
         // streamParams.options = ?;
 }
+
+// ========= set parameters =========
+void StreamManager::setInputDevice(unsigned int deviceID)
+{
+    qDebug() << "Setting input device";
+
+    // Check if input device exists
+    std::vector<unsigned int> allDeviceIDs = rtAudio.getDeviceIds();
+    if (vectorContains(allDeviceIDs, deviceID))
+    {
+        qWarning() << "Input device with id" << deviceID << "doesn't exist";
+        return;
+    }
+
+    streamParams.inputParameters.deviceId = deviceID;
+
+    // Check if outputParams are set
+    if (streamParams.outputParameters.deviceId == 0)
+        qWarning() << "Output device not yet set";
+}
+
+
+void StreamManager::setOutputDevice(unsigned int deviceID)
+{
+    qDebug() << "Setting output device";
+
+    // Check if output device exists
+    std::vector<unsigned int> allDeviceIDs = rtAudio.getDeviceIds();
+    if (vectorContains(allDeviceIDs, deviceID))
+    {
+        qWarning() << "Output device with id" << deviceID << "doesn't exist";
+        return;
+    }
+
+    streamParams.outputParameters.deviceId = deviceID;
+
+    // Check if inputParams are set
+    if (streamParams.inputParameters.deviceId == 0)
+        qWarning() << "Input device not yet set";
+}
+
+
+void StreamManager::setSampleRate(unsigned int sampleRate)
+{
+    // Check if sample rate works for input/output devices
+    std::vector<unsigned int> inputSampleRates = getInputDevice().sampleRates;
+    std::vector<unsigned int> outputSampleRates = getOutputDevice().sampleRates;
+    if (!vectorContains(inputSampleRates, sampleRate) || !vectorContains(outputSampleRates, sampleRate))
+    {
+        if (!vectorContains(inputSampleRates, sampleRate))
+            qWarning() << "Sample rate of " << sampleRate << "doesn't work for input device" << getInputDevice().ID;
+        if (!vectorContains(outputSampleRates, sampleRate))
+            qWarning() << "Sample rate of " << sampleRate << "doesn't work for output device" << getOutputDevice().ID;
+        return;
+    }
+
+    streamParams.sampleRate = sampleRate;
+}
+
+
+// ========= get parameters =========
 
 
 // ========= control audio stream =========
 void StreamManager::openStream()
 {
-    rtAudio.openStream
-    (
-        &streamParams.outputParameters,
-        &streamParams.inputParameters,
-        streamParams.audioFormat,
-        streamParams.sampleRate,
-        &streamParams.bufferFrames,
-        streamParams.audioCallback,
-        streamParams.userData,
-        &streamParams.options
-    );
+    if (!streamOpened && !streamStarted)
+        rtAudio.openStream
+        (
+            &streamParams.outputParameters,
+            &streamParams.inputParameters,
+            streamParams.audioFormat,
+            streamParams.sampleRate,
+            &streamParams.bufferFrames,
+            streamParams.audioCallback,
+            streamParams.userData,
+            &streamParams.options
+        );
 }
 
 void StreamManager::closeStream()
 {
-    rtAudio.closeStream();
+    if (streamOpened && !streamStarted)
+        rtAudio.closeStream();
 }
 
 void StreamManager::startStream()
 {
-    rtAudio.startStream();
+    if (streamOpened && !streamStarted)
+        rtAudio.startStream();
 }
 
 void StreamManager::stopStream()
 {
-    rtAudio.stopStream();
-    // for (int s = 0; s < BUFFER_SIZE; s++)
-    //     qDebug() << "Stream pt " << s << ": " << callbackData.iVecBuffer[s];
+    if (streamOpened && streamStarted)
+        rtAudio.stopStream();
 }
 
 void StreamManager::tickStream()
@@ -122,12 +181,13 @@ void StreamManager::tickStream()
 
 void StreamManager::abortStream()
 {
-    rtAudio.abortStream();
+    if (streamOpened && streamStarted)
+        rtAudio.abortStream();
 }
 
 
 // ========= callback functions =========
-int StreamManager::nullCallback
+int StreamManager::callback
 (
     void *outputBuffer,
     void *inputBuffer,
@@ -141,13 +201,21 @@ int StreamManager::nullCallback
     auto oBuffer = (float *) outputBuffer;
     auto streamData = (StreamData *) data;
 
-    // qDebug() << "Stream pt (float) " << nBufferFrames / 2 << ": " << iBuffer[nBufferFrames / 2];
     for (int s = 0; s < nBufferFrames; s++)
-        for (int c = 0; c < streamData->numInputChannels; c++)
+        for (int c = 0; c < streamData->iVecBuffers->size(); c++)
         {
-            float sample = iBuffer[s * streamData->numInputChannels + c];
-            streamData->iVecBuffers[c][s] = sample;
+            float sample = iBuffer[s * streamData->iVecBuffers->size() + c];
+            (*streamData->iVecBuffers)[c][s] = sample;
         }
-    \
+
+    // Processing function calls
+
+    for (int s = 0; s < nBufferFrames; s++)
+        for (int c = 0; c < streamData->oVecBuffers->size(); c++)
+        {
+            float sample = (*streamData->oVecBuffers)[c][s];
+            oBuffer[s * streamData->oVecBuffers->size() + c] = sample;
+        }
+
     return 0;
 }

@@ -9,17 +9,17 @@
 #include "streammanager.h"
 
 #define FFT_SIZE BUFFER_SIZE
-#define NYQUIST_SIZE FFT_SIZE / 2
-
 #define FFT_DIRECTION FFTW_FORWARD
 #define FFT_FLAGS FFTW_MEASURE
 
 typedef struct
 {
-    std::vector<std::vector<float>> oVecFFTs;
+    // Floating point PCM data
+    // Range: [0, 1]
+    std::vector<std::vector<float>>* iVecFFTs;
 
-    unsigned int numFFTBuffers;
-    unsigned int fftSize;
+    // FFT output
+    std::vector<std::vector<float>>* oVecFFTs;
 }
 FFTData;
 
@@ -44,8 +44,6 @@ class FFTManager : public QObject
 public:
     explicit FFTManager
     (
-        std::vector<std::vector<float>>* iVecBuffers,
-        unsigned int numFFTBuffers,
         unsigned int fftSize = FFT_SIZE,
         int direction = FFT_DIRECTION,
         unsigned int flags = FFT_FLAGS,
@@ -53,11 +51,7 @@ public:
     );
     ~FFTManager();
 
-    void FFT
-    (
-        std::vector<float>& iVecFFT,
-        std::vector<float>& oVecFFT
-    );
+    void resize(unsigned int fftSize);
 
     FFTData fftData;
 
@@ -67,9 +61,17 @@ public slots:
 private:
     FFTParams fftParams;
 
-    // Floating point PCM data
-    // Range: [0, 1]
-    std::vector<std::vector<float>>* iVecFFTs;
+    void FFT
+    (
+        std::vector<std::vector<float>>& iVecFFTs,
+        std::vector<std::vector<float>>& oVecFFTs
+    );
+
+    void FFT
+    (
+        std::vector<float>& iVecFFT,
+        std::vector<float>& oVecFFT
+    );
 
 signals:
 };

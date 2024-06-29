@@ -5,8 +5,6 @@
 
 FFTManager::FFTManager
 (
-    std::vector<std::vector<float>>* iVecFFTs,
-    unsigned int numFFTBuffers,
     unsigned int fftSize,
     int direction,
     unsigned int flags,
@@ -15,35 +13,10 @@ FFTManager::FFTManager
     : QObject{parent}
 {
     // Configure data params
-        fftData.numFFTBuffers = numFFTBuffers;
+    fftParams.direction = direction;
+    fftParams.flags = flags;
 
-        fftData.fftSize = fftSize;
-        fftParams.fftSize = fftSize;
-
-        fftParams.direction = direction;
-
-        fftParams.flags = flags;
-
-    // Configure FFT process
-        fftParams.dataIn = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fftParams.fftSize);
-        fftParams.dataOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fftParams.fftSize);
-
-        fftParams.fftPlan = fftw_plan_dft_1d
-        (
-            fftParams.fftSize,
-            fftParams.dataIn,
-            fftParams.dataOut,
-            fftParams.direction,
-            fftParams.flags
-        );
-
-    // Configure FFT input/output
-        this->iVecFFTs = iVecFFTs;
-
-        // Resize vecFFTs based iVecBuffers input
-        fftData.oVecFFTs.resize(fftData.numFFTBuffers);
-        for (auto& vecFFT : fftData.oVecFFTs)
-            vecFFT.resize(fftSize);
+    resize(fftSize);
 }
 
 
@@ -54,13 +27,41 @@ FFTManager::~FFTManager()
 }
 
 
+void FFTManager::resize(unsigned int fftSize)
+{
+    fftParams.fftSize = fftSize;
+
+    fftParams.dataIn = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fftSize);
+    fftParams.dataOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * fftSize);
+
+    fftParams.fftPlan = fftw_plan_dft_1d
+    (
+        fftParams.fftSize,
+        fftParams.dataIn,
+        fftParams.dataOut,
+        fftParams.direction,
+        fftParams.flags
+    );
+}
+
+
 void FFTManager::update()
 {
-    for (int i = 0; i < fftData.numFFTBuffers; i++)
-        FFT((*iVecFFTs)[i], fftData.oVecFFTs[i]);
-
+    FFT(*fftData.iVecFFTs, *fftData.oVecFFTs);
     // qDebug() << "FFT updated!";
 }
+
+
+void FFTManager::FFT
+(
+    std::vector<std::vector<float>>& iVecFFTs,
+    std::vector<std::vector<float>>& oVecFFTs
+)
+{
+    for (int i = 0; i < iVecFFTs.size(); i++)
+        FFT(iVecFFTs[i], oVecFFTs[i]);
+}
+
 
 
 // vecIn: real components of signal samples
@@ -87,8 +88,4 @@ void FFTManager::FFT
             std::pow(fftParams.dataOut[i][0], 2) +
             std::pow(fftParams.dataOut[i][1], 2)
         );
-
-    // qDebug() << "FFT pt (float) "
-    //          << 2
-    //          << oVecFFT[2];
 }
