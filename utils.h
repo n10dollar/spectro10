@@ -84,4 +84,11 @@ bool vectorContains(std::vector<T>& vec, T ref)
     return true;
 }
 
+
+template<typename T>
+bool isPowerOfTwo(T num)
+{
+    return (num > 0) && ((num & (num - 1)) == 0);
+}
+
 #endif // UTILS_H

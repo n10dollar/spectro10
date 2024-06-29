@@ -13,73 +13,19 @@ StreamManager::StreamManager
 )
     : QObject{parent}
 {
-    // Get device
-        std::vector<unsigned int> deviceIds = rtAudio.getDeviceIds();
-        if (deviceIds.empty())
-            qDebug() << "No audio devices found!";
+    setDefaultInputDevice();
+    setDefaultOutputDevice();
 
-        for (unsigned int id : deviceIds)
-            qDebug() << id << ": " << rtAudio.getDeviceInfo(id).name;
+    setAudioFormat(audioFormat);
+    setBufferSize(bufferSize);
 
-        // Get input device
-        int deviceInput = rtAudio.getDefaultInputDevice();
-
-        // Get output device
-        int deviceOutput = rtAudio.getDefaultOutputDevice();
-
-        // Get input/output device info
-        RtAudio::DeviceInfo infoInput = rtAudio.getDeviceInfo(deviceInput);
-        RtAudio::DeviceInfo infoOutput = rtAudio.getDeviceInfo(deviceOutput);
-
-        // Log device info
-        qDebug() << "Default Input Device: " << infoInput.name;
-        qDebug() << "Default Output Device: " << infoOutput.name;
-
-        qDebug() << "Num Input Channels: " << infoInput.inputChannels;
-        qDebug() << "Num Output Channels: " << infoOutput.outputChannels;
-
-        qDebug() << "Input Sample Rates: " << infoInput.sampleRates;
-        qDebug() << "Output Sample Rates: " << infoOutput.sampleRates;
-
-    // Configure input/output params
-        streamParams.inputParameters.deviceId = deviceInput;
-        streamParams.outputParameters.deviceId = deviceOutput;
-
-        streamData.numInputChannels = infoInput.inputChannels;
-        streamParams.inputParameters.nChannels = infoInput.inputChannels;
-
-        streamData.numOutputChannels = infoOutput.outputChannels;
-        streamParams.outputParameters.nChannels = infoOutput.outputChannels;
-
-    // Configure data params
-        streamData.audioFormat = audioFormat;
-        streamParams.audioFormat = audioFormat;
-
-        int sampleRate = closestMatchingSampleRate(infoInput.sampleRates, infoOutput.sampleRates);
-        streamData.sampleRate = sampleRate;
-        streamParams.sampleRate = sampleRate;
-
-        streamData.bufferSize = bufferSize;
-        streamParams.bufferFrames = bufferSize;
-
-    // Configure vector buffer channels
-        streamData.iVecBuffers.resize(streamData.numInputChannels);
-        streamData.oVecBuffers.resize(streamData.numOutputChannels);
-
-        // Set vector buffers size
-        for (auto& iVecBuffer : streamData.iVecBuffers)
-            iVecBuffer.resize(bufferSize);
-        for (auto& oVecBuffer : streamData.oVecBuffers)
-            oVecBuffer.resize(bufferSize);
-
-    // Set additional StreamParams
-        streamParams.audioCallback = &callback;
-        streamParams.userData = &streamData;
-        // streamParams.options = ?;
+    streamParams.audioCallback = &audioCallback;
+    streamParams.userData = &streamData;
+    // streamParams.options;
 }
 
-// ========= set parameters =========
-void StreamManager::setInputDevice(unsigned int deviceID)
+// ========= setters =========
+int StreamManager::setInputDevice(unsigned int deviceID)
 {
     qDebug() << "Setting input device";
 
@@ -88,19 +34,59 @@ void StreamManager::setInputDevice(unsigned int deviceID)
     if (vectorContains(allDeviceIDs, deviceID))
     {
         qWarning() << "Input device with id" << deviceID << "doesn't exist";
-        return;
+        return -1;
     }
 
     // Set device ID
     streamParams.inputParameters.deviceId = deviceID;
-    streamParams.inputParameters.nChannels = getDeviceInfo(deviceID).inputChannels;
 
-    // Update sample rate
-    setDefaultSampleRate();
+    // Set number of input channels
+    setNumInputChannels(getDeviceInfo(deviceID).inputChannels);
+
+    // If current sample rate errors
+    if (setSampleRate(getSampleRate()) == -1)
+        setDefaultSampleRate();
+
+    return 0;
 }
 
 
-void StreamManager::setOutputDevice(unsigned int deviceID)
+void StreamManager::setDefaultInputDevice()
+{
+    setInputDevice(getDefaultInputDevice().ID);
+}
+
+
+int StreamManager::setNumInputChannels(unsigned int numInputChannels)
+{
+    // Channels in range: [0, maxChannels]
+    if (numInputChannels < 0)
+    {
+        qWarning() << "numInputChannels negative:" << numInputChannels << "<" << 0;
+        return -1;
+    }
+    if (numInputChannels > getInputDevice().inputChannels)
+    {
+        qWarning() << "numInputChannels greater than inputDevice.inputChannels:"
+                   << numInputChannels << ">"
+                   << getInputDevice().inputChannels;
+        return -1;
+    }
+
+    // Set number of input channels
+    streamParams.inputParameters.nChannels = numInputChannels;
+
+    // Resize input buffers
+    streamData.iVecBuffers.resize(numInputChannels);
+
+    // Resize input buffer channels
+    setBufferSize(getBufferSize());
+
+    return 0;
+}
+
+
+int StreamManager::setOutputDevice(unsigned int deviceID)
 {
     qDebug() << "Setting output device";
 
@@ -109,19 +95,59 @@ void StreamManager::setOutputDevice(unsigned int deviceID)
     if (vectorContains(allDeviceIDs, deviceID))
     {
         qWarning() << "Output device with id" << deviceID << "doesn't exist";
-        return;
+        return -1;
     }
 
     // Set device ID
     streamParams.outputParameters.deviceId = deviceID;
-    streamParams.outputParameters.nChannels = getDeviceInfo(deviceID).outputChannels;
 
-    // Update sample rate
-    setDefaultSampleRate();
+    // Set number of output channels
+    setNumOutputChannels(getDeviceInfo(deviceID).outputChannels);
+
+    // If current sample rate errors
+    if (setSampleRate(getSampleRate()) == -1)
+        setDefaultSampleRate();
+
+    return 0;
 }
 
 
-void StreamManager::setSampleRate(unsigned int sampleRate)
+void StreamManager::setDefaultOutputDevice()
+{
+    setInputDevice(getDefaultOutputDevice().ID);
+}
+
+
+int StreamManager::setNumOutputChannels(unsigned int numOutputChannels)
+{
+    // Channels in range: [0, maxChannels]
+    if (numOutputChannels < 0)
+    {
+        qWarning() << "numInputChannels negative:" << numOutputChannels << "<" << 0;
+        return -1;
+    }
+    if (numOutputChannels > getOutputDevice().outputChannels)
+    {
+        qWarning() << "numInputChannels greater than inputDevice.inputChannels:"
+                   << numOutputChannels << ">"
+                   << getInputDevice().outputChannels;
+        return -1;
+    }
+
+    // Set number of input channels
+    streamParams.outputParameters.nChannels = numOutputChannels;
+
+    // Resize output buffers
+    streamData.oVecBuffers.resize(numOutputChannels);
+
+    // Resize output buffer channels
+    setBufferSize(getBufferSize());
+
+    return 0;
+}
+
+
+int StreamManager::setSampleRate(unsigned int sampleRate)
 {
     bool sampleRateCompatible = true;
 
@@ -154,7 +180,11 @@ void StreamManager::setSampleRate(unsigned int sampleRate)
     }
 
     if (sampleRateCompatible)
+    {
         streamParams.sampleRate = sampleRate;
+        return 0;
+    }
+    return -1;
 }
 
 
@@ -174,7 +204,27 @@ void StreamManager::setDefaultSampleRate()
 }
 
 
-// ========= get parameters =========
+void StreamManager::setBufferSize(unsigned int bufferSize)
+{
+    // Check if bufferSize works
+    if (!isPowerOfTwo(bufferSize))
+    {
+        qDebug() << "bufferSize of" << bufferSize << "isn't power of 2";
+        return;
+    }
+
+    // Set buffer size
+    streamParams.bufferFrames = bufferSize;
+
+    // Resize input/output buffers channels
+        for (std::vector<float>& iVecBuffer : streamData.iVecBuffers)
+            iVecBuffer.resize(bufferSize);
+        for (std::vector<float>& oVecBuffer : streamData.oVecBuffers)
+            oVecBuffer.resize(bufferSize);
+}
+
+
+// ========= getters =========
 
 
 // ========= control audio stream =========
@@ -223,8 +273,8 @@ void StreamManager::abortStream()
 }
 
 
-// ========= callback functions =========
-int StreamManager::callback
+// ========= callbacks =========
+int StreamManager::audioCallback
 (
     void *outputBuffer,
     void *inputBuffer,
