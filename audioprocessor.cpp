@@ -32,12 +32,19 @@ AudioProcessor::AudioProcessor(QObject *parent)
     audioData.vecSpectrogram.resize(audioData.fftData->fftSize / 2);
 
     // Create filters
-    cycfi::q::lowpass filterLP(2000_Hz, (float) audioData.streamData->bufferSize, .707);
-    cycfi::q::highpass filterHP(2000_Hz, (float) audioData.streamData->bufferSize, .707);
+    auto* filterLP = new cycfi::q::lowpass(2000_Hz, (float) audioData.streamData->sampleRate, .707);
+    auto* filterHP = new cycfi::q::highpass(2000_Hz, (float) audioData.streamData->sampleRate, .707);
 
     // Add filters
     filterData.filters.push_back(filterLP);
     filterData.filters.push_back(filterHP);
+}
+
+
+AudioProcessor::~AudioProcessor()
+{
+    for (cycfi::q::biquad* filter : filterData.filters)
+        free(filter);
 }
 
 
@@ -124,11 +131,11 @@ void AudioProcessor::filterStream
     for (int i = 0; i < iVecFilter.size(); i++)
     {
         float centeredPt = 2.0f * iVecFilter[i] - 1.0f;
-        for (auto& filter : filterData.filters)
-            centeredPt = filter(centeredPt);
+        for (auto* filter : filterData.filters)
+            centeredPt = (*filter)(centeredPt);
         float unCenteredPt = (centeredPt + 1.0f) / 2.0f;
         oVecFilter[i] = unCenteredPt;
     }
 
-    // qDebug() << oVecFilter[iVecFilter.size() / 2];
+    qDebug() << oVecFilter[iVecFilter.size() / 2];
 }

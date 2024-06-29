@@ -39,7 +39,7 @@ using namespace cycfi::q::literals;
 typedef struct
 {
     // Filters
-    std::vector<cycfi::q::biquad> filters;
+    std::vector<cycfi::q::biquad*> filters;
 }
 FilterData;
 
@@ -49,6 +49,7 @@ class AudioProcessor : public QObject
     Q_OBJECT
 public:
     explicit AudioProcessor(QObject *parent = nullptr);
+    ~AudioProcessor();
 
     AudioData audioData;
     FilterData filterData;
