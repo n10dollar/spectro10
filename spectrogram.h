@@ -3,14 +3,44 @@
 
 #include <QWidget>
 #include <QPainter>
+#include <QPaintEvent>
 #include <vector>
 
 #define SPECTROGRAM_WIDTH 400
 #define SPECTROGRAM_HEIGHT 200
-#define SPECTROGRAM_BACKGROUND QColor(100, 100, 100)
-#define SPECTROGRAM_BINS QColor(255, 255, 255)
+#define SPECTROGRAM_NUM_BINS 512
+
+#define SPECTROGRAM_BG_COLOR QColor(100, 100, 100)
+#define SPECTROGRAM_BAR_COLOR QColor(255, 255, 255)
 
 #define LOG_ZERO .8f
+
+typedef void (*PaintSpectrogram)(QPainter* painter, QPaintEvent* event);
+// typedef std::function<void (QPainter* painter, QPaintEvent* event)> PaintSpectrogram;
+
+
+typedef struct
+{
+    // Range: [0, 1]
+    std::vector<float> dataStream;
+}
+SpectrogramData;
+
+
+typedef struct
+{
+    QPainter painter;
+
+    int width;
+    int height;
+
+    int numBins;
+
+    QBrush bgBrush;
+    QBrush barBrush;
+}
+SpectrogramParams;
+
 
 class Spectrogram : public QWidget
 {
@@ -18,13 +48,34 @@ class Spectrogram : public QWidget
 public:
     explicit Spectrogram
     (
-        std::vector<float>* dataStream,
-        int dimWidth = SPECTROGRAM_WIDTH,
-        int dimHeight = SPECTROGRAM_HEIGHT,
-        QColor background = SPECTROGRAM_BACKGROUND,
-        QColor bins = SPECTROGRAM_BINS,
+        int width = SPECTROGRAM_WIDTH,
+        int height = SPECTROGRAM_HEIGHT,
+        int numBins = SPECTROGRAM_NUM_BINS,
+        QColor bgColor = SPECTROGRAM_BG_COLOR,
+        QColor barColor = SPECTROGRAM_BAR_COLOR,
         QWidget *parent = nullptr
     );
+
+    // Setters
+        void setPaintSpectrogram(PaintSpectrogram paintSpectrogram);
+
+        void setDimensions(int width, int height);
+        void setNumBins(int numBins);
+
+        void setBgColor(QColor bgColor);
+        void setBarColor(QColor barColor);
+
+    // Getters
+        PaintSpectrogram getPaintSpectrogram();
+
+        // dimensions: [width, height]
+        std::pair<int, int> getDimensions();
+        int getNumBins();
+
+        QColor getBgColor();
+        QColor getBarColor();
+
+    SpectrogramData spectrogramData;
 
 public slots:
     void update();
@@ -34,20 +85,12 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    // Range: [0, 1]
-    std::vector<float>* dataStream;
+    SpectrogramParams spectrogramParams;
+    PaintSpectrogram paintSpectrogram;
 
     // Core painting/drawing functionality
     void paintLinear(QPainter* painter, QPaintEvent* event);
     void paintLogarithmic(QPainter* painter, QPaintEvent* event);
-
-    // QPainter helper QObjects
-    QPainter painter;
-    QBrush background;
-    QBrush bins;
-
-    int dimWidth;
-    int dimHeight;
 };
 
 #endif // SPECTROGRAM_H

@@ -1,27 +1,31 @@
 #include "spectrogram.h"
 
-#include <QPaintEvent>
 #include <QDebug>
-#include <cmath>
 
 Spectrogram::Spectrogram
 (
-    std::vector<float>* dataStream,
-    int dimWidth,
-    int dimHeight,
-    QColor background,
-    QColor bins,
+    int width,
+    int height,
+    int numBins,
+    QColor bgColor,
+    QColor barColor,
     QWidget *parent
 )
     :
-    dataStream(dataStream),
-    dimWidth(dimWidth),
-    dimHeight(dimHeight),
-    background(background),
-    bins(bins),
+    spectrogramParams
+    {
+        {},
+        width,
+        height,
+        numBins,
+        {bgColor},
+        {barColor},
+    },
     QWidget{parent}
 {
-    setFixedSize(dimWidth, dimHeight);
+    setDimensions(width, height);
+    setNumBins(numBins);
+    setPaintSpectrogram(&paintLinear);
 }
 
 
@@ -29,49 +33,124 @@ Spectrogram::Spectrogram
 void Spectrogram::update()
 {
     QWidget::update();
-    // qDebug() << "Spectrogram updated!";
 };
+
+
+// ========= Setters =========
+void Spectrogram::setPaintSpectrogram(PaintSpectrogram paintSpectrogram)
+{
+    qDebug() << "Setting spectrogram paint scaling";
+
+    this->paintSpectrogram = paintSpectrogram;
+}
+
+
+void Spectrogram::setDimensions(int width, int height)
+{
+    qDebug() << "Setting spectrogram dimensions (width, height)";
+
+    spectrogramParams.width = width;
+    spectrogramParams.height = height;
+
+    setFixedSize(width, height);
+}
+
+
+void Spectrogram::setNumBins(int numBins)
+{
+    qDebug() << "Setting spectrogram number of bins";
+
+    spectrogramParams.numBins = numBins;
+
+    spectrogramData.dataStream.resize(numBins);
+}
+
+
+void Spectrogram::setBgColor(QColor bgColor)
+{
+    spectrogramParams.bgBrush.setColor(bgColor);
+}
+
+
+void Spectrogram::setBarColor(QColor barColor)
+{
+    spectrogramParams.barBrush.setColor(barColor);
+}
+
+
+// ========= Getters =========
+PaintSpectrogram Spectrogram::getPaintSpectrogram()
+{
+    return paintSpectrogram;
+}
+
+
+std::pair<int, int> Spectrogram::getDimensions()
+{
+    return std::pair<int, int>(spectrogramParams.width, spectrogramParams.height);
+}
+
+
+int Spectrogram::getNumBins()
+{
+    return spectrogramParams.numBins;
+}
+
+
+QColor Spectrogram::getBgColor()
+{
+    return spectrogramParams.bgBrush.color();
+}
+
+
+QColor Spectrogram::getBarColor()
+{
+    return spectrogramParams.barBrush.color();
+}
 
 
 // ========= Overriden =========
 void Spectrogram::paintEvent(QPaintEvent *event)
 {
-    painter.begin(this);
-    paintLogarithmic(&painter, event);
-    painter.end();
+    spectrogramParams.painter.begin(this);
+    paintSpectrogram(&spectrogramParams.painter, event);
+    spectrogramParams.painter.end();
 }
 
 
-// ========= Drawing =========
+// ========= Painting =========
 void Spectrogram::paintLinear(QPainter* painter, QPaintEvent* event)
 {
-    painter->fillRect(event->rect(), background);
+    painter->fillRect(event->rect(), spectrogramParams.bgBrush);
 
-    for (int s = 0; s < dataStream->size(); s++)
+    for (int s = 1; s < spectrogramParams.numBins; s++)
     {
-        int x = (((float) s) / ((float) dataStream->size())) * dimWidth;
-        int y = (*dataStream)[s] * dimHeight;
-        painter->drawLine(x, dimHeight, x, dimHeight - y);
+        int x = (((float) s) / ((float) spectrogramParams.numBins)) * getDimensions().first;
+        int y = spectrogramData.dataStream[s] * getDimensions().second;
+        painter->drawLine(x, getDimensions().second, x, getDimensions().second - y);
     }
 }
 
 
 void Spectrogram::paintLogarithmic(QPainter* painter, QPaintEvent* event)
 {
-    painter->fillRect(event->rect(), background);
+    painter->fillRect(event->rect(), spectrogramParams.bgBrush);
 
-    for (int s = 1; s < dataStream->size(); s++)
+    for (int s = 1; s < spectrogramParams.numBins; s++)
     {
         int logXstart =
             (((float) std::log10(s)) /
-             ((float) std::log10(dataStream->size()))) *
-            dimWidth;
+            ((float) std::log10(spectrogramParams.numBins))) *
+            getDimensions().first;
         int logXend =
             (((float) std::log10(s + 1)) /
-             ((float) std::log10(dataStream->size()))) *
-            dimWidth;
-        int logY = LOG_ZERO * ((float) dimHeight) + std::log10((*dataStream)[s]) * ((1 - LOG_ZERO) * ((float) dimHeight));
-        painter->drawRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight);
-        // painter->fillRect(logXstart, dimHeight - logY, logXend - logXstart, dimHeight, bins);
+            ((float) std::log10(spectrogramParams.numBins))) *
+            getDimensions().first;
+
+        int logY = LOG_ZERO *
+            ((float) getDimensions().second) + std::log10(spectrogramData.dataStream[s]) *
+            ((1 - LOG_ZERO) * ((float) getDimensions().second));
+
+        painter->drawRect(logXstart, getDimensions().second - logY, logXend - logXstart, getDimensions().second);
     }
 }

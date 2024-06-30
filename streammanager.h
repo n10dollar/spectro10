@@ -66,10 +66,6 @@ public:
     );
     ~StreamManager();
 
-    std::vector<RtAudio::DeviceInfo> getAllDevices();
-    std::vector<unsigned int> getAllDeviceIDs();
-    RtAudio::DeviceInfo getDeviceInfo(unsigned int deviceID);
-
     // Setters
         int setInputDevice(unsigned int deviceID);
         void setDefaultInputDevice();
@@ -91,6 +87,10 @@ public:
         void setAudioProcessing(AudioProcessing audioProcessing);
 
     // Getters
+        std::vector<RtAudio::DeviceInfo> getAllDevices();
+        std::vector<unsigned int> getAllDeviceIDs();
+        RtAudio::DeviceInfo getDeviceInfo(unsigned int deviceID);
+
         RtAudio::DeviceInfo getInputDevice();
         RtAudio::DeviceInfo getOutputDevice();
 
