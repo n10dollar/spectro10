@@ -10,6 +10,14 @@
 #define AUDIO_FORMAT RTAUDIO_FLOAT32
 #define BUFFER_SIZE 1024
 
+enum StreamState
+{
+    OPENED,
+    STARTED,
+    CLOSED
+};
+
+
 typedef struct
 {
     // Floating point PCM data
@@ -38,7 +46,7 @@ typedef struct
 StreamParams;
 
 
-typedef void (*AudioProcessing)(StreamData streamData);
+typedef void (*AudioProcessing)(StreamData& streamData);
 
 
 class StreamManager : public QObject
@@ -51,6 +59,7 @@ public:
         unsigned int bufferSize = BUFFER_SIZE,
         QObject *parent = nullptr
     );
+    ~StreamManager();
 
     std::vector<RtAudio::DeviceInfo> getAllDevices();
     std::vector<unsigned int> getAllDeviceIDs();
@@ -87,26 +96,32 @@ public:
 
         unsigned int getBufferSize();
 
-        AudioProcessing getCallback();
+        AudioProcessing getAudioProcessing();
 
     StreamData streamData;
 
 public slots:
     void openStream();
-    void closeStream();
 
     void startStream();
+
     void stopStream();
+    void abortStream();
+
+    void closeStream();
 
     void tickStream();
-    void abortStream();
 
 private:
     RtAudio rtAudio;
-    StreamParams streamParams;
 
-    bool streamOpened;
-    bool streamStarted;
+    StreamParams streamParams;
+    StreamState streamState;
+
+    AudioProcessing audioProcessing;
+
+    // Helpers
+        void restartStream();
 
     static int audioCallback
     (

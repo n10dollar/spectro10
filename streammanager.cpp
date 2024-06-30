@@ -1,7 +1,6 @@
 #include "streammanager.h"
 
 #include <QDebug>
-#include <climits>
 
 #include "utils.h"
 
@@ -13,16 +12,25 @@ StreamManager::StreamManager
 )
     : QObject{parent}
 {
-    setDefaultInputDevice();
-    setDefaultOutputDevice();
+    // Calling API
+        setDefaultInputDevice();
+        setDefaultOutputDevice();
 
-    setAudioFormat(audioFormat);
-    setBufferSize(bufferSize);
+        setAudioFormat(audioFormat);
+        setBufferSize(bufferSize);
 
-    streamParams.audioCallback = &audioCallback;
-    streamParams.userData = &streamData;
-    // streamParams.options;
+    // One-time initialization
+        streamParams.audioCallback = &audioCallback;
+        streamParams.userData = this;
+        // streamParams.options;
+
+    streamState = CLOSED;
 }
+
+
+StreamManager::~StreamManager()
+{}
+
 
 // ========= setters =========
 int StreamManager::setInputDevice(unsigned int deviceID)
@@ -47,6 +55,9 @@ int StreamManager::setInputDevice(unsigned int deviceID)
     if (setSampleRate(getSampleRate()) == -1)
         setDefaultSampleRate();
 
+    // Restart stream for changes to take effect
+    restartStream();
+
     return 0;
 }
 
@@ -59,6 +70,8 @@ void StreamManager::setDefaultInputDevice()
 
 int StreamManager::setNumInputChannels(unsigned int numInputChannels)
 {
+    qDebug() << "Setting number of input channels";
+
     // Channels in range: [0, maxChannels]
     if (numInputChannels < 0)
     {
@@ -81,6 +94,9 @@ int StreamManager::setNumInputChannels(unsigned int numInputChannels)
 
     // Resize input buffer channels
     setBufferSize(getBufferSize());
+
+    // Restart stream for changes to take effect
+    restartStream();
 
     return 0;
 }
@@ -108,6 +124,9 @@ int StreamManager::setOutputDevice(unsigned int deviceID)
     if (setSampleRate(getSampleRate()) == -1)
         setDefaultSampleRate();
 
+    // Restart stream for changes to take effect
+    restartStream();
+
     return 0;
 }
 
@@ -120,6 +139,8 @@ void StreamManager::setDefaultOutputDevice()
 
 int StreamManager::setNumOutputChannels(unsigned int numOutputChannels)
 {
+    qDebug() << "Setting number of output channels";
+
     // Channels in range: [0, maxChannels]
     if (numOutputChannels < 0)
     {
@@ -143,12 +164,17 @@ int StreamManager::setNumOutputChannels(unsigned int numOutputChannels)
     // Resize output buffer channels
     setBufferSize(getBufferSize());
 
+    // Restart stream for changes to take effect
+    restartStream();
+
     return 0;
 }
 
 
 int StreamManager::setSampleRate(unsigned int sampleRate)
 {
+    qDebug() << "Setting sample rate";
+
     bool sampleRateCompatible = true;
 
     // Check if input device selected
@@ -182,6 +208,8 @@ int StreamManager::setSampleRate(unsigned int sampleRate)
     if (sampleRateCompatible)
     {
         streamParams.sampleRate = sampleRate;
+        // Restart stream for changes to take effect
+        restartStream();
         return 0;
     }
     return -1;
@@ -200,12 +228,15 @@ void StreamManager::setDefaultSampleRate()
         inputOutputSampleRates.push_back(getOutputDevice().sampleRates);
 
     unsigned int defaultSampleRate = closestMatching(inputOutputSampleRates, (unsigned int) SAMPLE_RATE_REF);
-    streamParams.sampleRate = defaultSampleRate;
+
+    setSampleRate(defaultSampleRate);
 }
 
 
 void StreamManager::setBufferSize(unsigned int bufferSize)
 {
+    qDebug() << "Setting buffer size";
+
     // Check if bufferSize works
     if (!isPowerOfTwo(bufferSize))
     {
@@ -221,16 +252,80 @@ void StreamManager::setBufferSize(unsigned int bufferSize)
             iVecBuffer.resize(bufferSize);
         for (std::vector<float>& oVecBuffer : streamData.oVecBuffers)
             oVecBuffer.resize(bufferSize);
+
+    // Restart stream for changes to take effect
+    restartStream();
 }
 
 
 // ========= getters =========
+RtAudio::DeviceInfo StreamManager::getInputDevice()
+{
+    return rtAudio.getDeviceInfo(streamParams.inputParameters.deviceId);
+}
+
+
+RtAudio::DeviceInfo StreamManager::getOutputDevice()
+{
+    return rtAudio.getDeviceInfo(streamParams.outputParameters.deviceId);
+}
+
+
+RtAudio::DeviceInfo StreamManager::getDefaultInputDevice()
+{
+    return rtAudio.getDeviceInfo(rtAudio.getDefaultInputDevice());
+}
+
+
+RtAudio::DeviceInfo StreamManager::getDefaultOutputDevice()
+{
+    return rtAudio.getDeviceInfo(rtAudio.getDefaultOutputDevice());
+}
+
+
+unsigned int StreamManager::getSampleRate()
+{
+    return streamParams.sampleRate;
+}
+
+
+unsigned int StreamManager::getBufferSize()
+{
+    return streamParams.bufferFrames;
+}
+
+
+AudioProcessing StreamManager::getAudioProcessing()
+{
+    return audioProcessing;
+}
+
+
+// ========= helpers =========
+void StreamManager::restartStream()
+{
+    if (streamState == OPENED)
+    {
+        closeStream();
+        openStream();
+    }
+    else if (streamState == STARTED)
+    {
+        stopStream();
+        closeStream();
+        openStream();
+        startStream();
+    }
+    else if (streamState == CLOSED)
+    {}
+}
 
 
 // ========= control audio stream =========
 void StreamManager::openStream()
 {
-    if (!streamOpened && !streamStarted)
+    if (streamState == CLOSED)
+    {
         rtAudio.openStream
         (
             &streamParams.outputParameters,
@@ -242,35 +337,53 @@ void StreamManager::openStream()
             streamParams.userData,
             &streamParams.options
         );
+        streamState = OPENED;
+    }
 }
 
-void StreamManager::closeStream()
-{
-    if (streamOpened && !streamStarted)
-        rtAudio.closeStream();
-}
 
 void StreamManager::startStream()
 {
-    if (streamOpened && !streamStarted)
+    if (streamState == OPENED)
+    {
         rtAudio.startStream();
+        streamState = STARTED;
+    }
 }
+
 
 void StreamManager::stopStream()
 {
-    if (streamOpened && streamStarted)
+    if (streamState == STARTED)
+    {
         rtAudio.stopStream();
+        streamState = OPENED;
+    }
 }
 
-void StreamManager::tickStream()
-{
-}
 
 void StreamManager::abortStream()
 {
-    if (streamOpened && streamStarted)
+    if (streamState == STARTED)
+    {
         rtAudio.abortStream();
+        streamState = OPENED;
+    }
 }
+
+
+void StreamManager::closeStream()
+{
+    if (streamState == OPENED)
+    {
+        rtAudio.closeStream();
+        streamState = CLOSED;
+    }
+}
+
+
+void StreamManager::tickStream()
+{}
 
 
 // ========= callbacks =========
@@ -286,22 +399,23 @@ int StreamManager::audioCallback
 {
     auto iBuffer = (float *) inputBuffer;
     auto oBuffer = (float *) outputBuffer;
-    auto streamData = (StreamData *) data;
+    auto streamManager = (StreamManager *) data;
 
     for (int s = 0; s < nBufferFrames; s++)
-        for (int c = 0; c < streamData->iVecBuffers->size(); c++)
+        for (int c = 0; c < streamManager->getInputDevice().inputChannels; c++)
         {
-            float sample = iBuffer[s * streamData->iVecBuffers->size() + c];
-            (*streamData->iVecBuffers)[c][s] = sample;
+            float sample = iBuffer[s * streamManager->getInputDevice().inputChannels + c];
+            streamManager->streamData.iVecBuffers[c][s] = sample;
         }
 
-    // Processing function calls
+    // Processing function call
+    streamManager->audioProcessing(streamManager->streamData);
 
     for (int s = 0; s < nBufferFrames; s++)
-        for (int c = 0; c < streamData->oVecBuffers->size(); c++)
+        for (int c = 0; c < streamManager->getOutputDevice().outputChannels; c++)
         {
-            float sample = (*streamData->oVecBuffers)[c][s];
-            oBuffer[s * streamData->oVecBuffers->size() + c] = sample;
+            float sample = streamManager->streamData.oVecBuffers[c][s];
+            oBuffer[s * streamManager->getOutputDevice().outputChannels + c] = sample;
         }
 
     return 0;
