@@ -30,23 +30,28 @@ typedef struct
 StreamData;
 
 
+typedef void (*AudioProcessing)(StreamData& streamData);
+
+
 typedef struct
 {
-    RtAudio::StreamParameters inputParameters;
-    RtAudio::StreamParameters outputParameters;
+    // RtAudio params
+        RtAudio::StreamParameters inputParameters;
+        RtAudio::StreamParameters outputParameters;
 
-    RtAudioFormat audioFormat;
-    unsigned int sampleRate;
-    unsigned int bufferFrames;
+        RtAudioFormat audioFormat;
+        unsigned int sampleRate;
+        unsigned int bufferFrames;
 
-    RtAudioCallback audioCallback;
-    void* userData;
-    RtAudio::StreamOptions options;
+        RtAudioCallback audioCallback;
+        void* userData;
+        RtAudio::StreamOptions options;
+
+    // Additional params
+        StreamState streamState;
+        AudioProcessing audioProcessing;
 }
 StreamParams;
-
-
-typedef void (*AudioProcessing)(StreamData& streamData);
 
 
 class StreamManager : public QObject
@@ -81,7 +86,7 @@ public:
         int setSampleRate(unsigned int sampleRate);
         void setDefaultSampleRate();
 
-        void setBufferSize(unsigned int bufferSize);
+        int setBufferSize(unsigned int bufferSize);
 
         void setAudioProcessing(AudioProcessing audioProcessing);
 
@@ -114,11 +119,7 @@ public slots:
 
 private:
     RtAudio rtAudio;
-
     StreamParams streamParams;
-    StreamState streamState;
-
-    AudioProcessing audioProcessing;
 
     // Helpers
         void restartStream();

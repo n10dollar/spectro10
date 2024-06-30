@@ -1,6 +1,7 @@
 #include "streammanager.h"
 
 #include <QDebug>
+#include <omp.h>
 
 #include "utils.h"
 
@@ -24,7 +25,7 @@ StreamManager::StreamManager
         streamParams.userData = this;
         // streamParams.options;
 
-    streamState = CLOSED;
+    streamParams.streamState = CLOSED;
 }
 
 
@@ -45,11 +46,15 @@ int StreamManager::setInputDevice(unsigned int deviceID)
         return -1;
     }
 
+    // Get old device's number input channels
+    unsigned int oldNumInputChannels = getInputDevice().inputChannels;
+
     // Set device ID
     streamParams.inputParameters.deviceId = deviceID;
 
-    // Set number of input channels
-    setNumInputChannels(getDeviceInfo(deviceID).inputChannels);
+    // If number of input channels errors
+    if (setNumInputChannels(oldNumInputChannels) == -1)
+        setDefaultNumInputChannels();
 
     // If current sample rate errors
     if (setSampleRate(getSampleRate()) == -1)
@@ -114,11 +119,15 @@ int StreamManager::setOutputDevice(unsigned int deviceID)
         return -1;
     }
 
+    // Get old device's number input channels
+    unsigned int oldNumOutputChannels = getInputDevice().outputChannels;
+
     // Set device ID
     streamParams.outputParameters.deviceId = deviceID;
 
-    // Set number of output channels
-    setNumOutputChannels(getDeviceInfo(deviceID).outputChannels);
+    // If number of output channels errors
+    if (setNumInputChannels(oldNumOutputChannels) == -1)
+        setDefaultNumOutputChannels();
 
     // If current sample rate errors
     if (setSampleRate(getSampleRate()) == -1)
@@ -233,7 +242,7 @@ void StreamManager::setDefaultSampleRate()
 }
 
 
-void StreamManager::setBufferSize(unsigned int bufferSize)
+int StreamManager::setBufferSize(unsigned int bufferSize)
 {
     qDebug() << "Setting buffer size";
 
@@ -241,20 +250,30 @@ void StreamManager::setBufferSize(unsigned int bufferSize)
     if (!isPowerOfTwo(bufferSize))
     {
         qDebug() << "bufferSize of" << bufferSize << "isn't power of 2";
-        return;
+        return -1;
     }
 
     // Set buffer size
     streamParams.bufferFrames = bufferSize;
 
     // Resize input/output buffers channels
-        for (std::vector<float>& iVecBuffer : streamData.iVecBuffers)
-            iVecBuffer.resize(bufferSize);
-        for (std::vector<float>& oVecBuffer : streamData.oVecBuffers)
-            oVecBuffer.resize(bufferSize);
+    #pragma omp parallel for
+    for (std::vector<float>& iVecBuffer : streamData.iVecBuffers)
+        iVecBuffer.resize(bufferSize);
+    #pragma omp parallel for
+    for (std::vector<float>& oVecBuffer : streamData.oVecBuffers)
+        oVecBuffer.resize(bufferSize);
 
     // Restart stream for changes to take effect
     restartStream();
+
+    return 0;
+}
+
+
+void StreamManager::setAudioProcessing(AudioProcessing audioProcessing)
+{
+    streamParams.audioProcessing = audioProcessing;
 }
 
 
@@ -297,26 +316,26 @@ unsigned int StreamManager::getBufferSize()
 
 AudioProcessing StreamManager::getAudioProcessing()
 {
-    return audioProcessing;
+    return streamParams.audioProcessing;
 }
 
 
 // ========= helpers =========
 void StreamManager::restartStream()
 {
-    if (streamState == OPENED)
+    if (streamParams.streamState == OPENED)
     {
         closeStream();
         openStream();
     }
-    else if (streamState == STARTED)
+    else if (streamParams.streamState == STARTED)
     {
         stopStream();
         closeStream();
         openStream();
         startStream();
     }
-    else if (streamState == CLOSED)
+    else if (streamParams.streamState == CLOSED)
     {}
 }
 
@@ -324,7 +343,7 @@ void StreamManager::restartStream()
 // ========= control audio stream =========
 void StreamManager::openStream()
 {
-    if (streamState == CLOSED)
+    if (streamParams.streamState == CLOSED)
     {
         rtAudio.openStream
         (
@@ -337,47 +356,47 @@ void StreamManager::openStream()
             streamParams.userData,
             &streamParams.options
         );
-        streamState = OPENED;
+        streamParams.streamState = OPENED;
     }
 }
 
 
 void StreamManager::startStream()
 {
-    if (streamState == OPENED)
+    if (streamParams.streamState == OPENED)
     {
         rtAudio.startStream();
-        streamState = STARTED;
+        streamParams.streamState = STARTED;
     }
 }
 
 
 void StreamManager::stopStream()
 {
-    if (streamState == STARTED)
+    if (streamParams.streamState == STARTED)
     {
         rtAudio.stopStream();
-        streamState = OPENED;
+        streamParams.streamState = OPENED;
     }
 }
 
 
 void StreamManager::abortStream()
 {
-    if (streamState == STARTED)
+    if (streamParams.streamState == STARTED)
     {
         rtAudio.abortStream();
-        streamState = OPENED;
+        streamParams.streamState = OPENED;
     }
 }
 
 
 void StreamManager::closeStream()
 {
-    if (streamState == OPENED)
+    if (streamParams.streamState == OPENED)
     {
         rtAudio.closeStream();
-        streamState = CLOSED;
+        streamParams.streamState = CLOSED;
     }
 }
 
@@ -401,6 +420,7 @@ int StreamManager::audioCallback
     auto oBuffer = (float *) outputBuffer;
     auto streamManager = (StreamManager *) data;
 
+    #pragma omp parallel for
     for (int s = 0; s < nBufferFrames; s++)
         for (int c = 0; c < streamManager->getInputDevice().inputChannels; c++)
         {
@@ -409,8 +429,9 @@ int StreamManager::audioCallback
         }
 
     // Processing function call
-    streamManager->audioProcessing(streamManager->streamData);
+    streamManager->streamParams.audioProcessing(streamManager->streamData);
 
+    #pragma omp parallel for
     for (int s = 0; s < nBufferFrames; s++)
         for (int c = 0; c < streamManager->getOutputDevice().outputChannels; c++)
         {
