@@ -33,7 +33,7 @@ StreamManager::~StreamManager()
 {}
 
 
-// ========= setters =========
+// ========= Setters =========
 int StreamManager::setInputDevice(unsigned int deviceID)
 {
     qDebug() << "Setting input device";
@@ -277,7 +277,7 @@ void StreamManager::setAudioProcessing(AudioProcessing audioProcessing)
 }
 
 
-// ========= getters =========
+// ========= Getters =========
 RtAudio::DeviceInfo StreamManager::getInputDevice()
 {
     return rtAudio.getDeviceInfo(streamParams.inputParameters.deviceId);
@@ -320,7 +320,7 @@ AudioProcessing StreamManager::getAudioProcessing()
 }
 
 
-// ========= helpers =========
+// ========= Helpers =========
 void StreamManager::restartStream()
 {
     if (streamParams.streamState == OPENED)
@@ -340,7 +340,7 @@ void StreamManager::restartStream()
 }
 
 
-// ========= control audio stream =========
+// ========= Control audio stream =========
 void StreamManager::openStream()
 {
     if (streamParams.streamState == CLOSED)
@@ -405,7 +405,7 @@ void StreamManager::tickStream()
 {}
 
 
-// ========= callbacks =========
+// ========= Callbacks =========
 int StreamManager::audioCallback
 (
     void *outputBuffer,

@@ -33,14 +33,14 @@ FFTManager::~FFTManager()
 }
 
 
-// ========= slots =========
+// ========= Slots =========
 void FFTManager::update()
 {
     calculateFFT(fftData.iVecFFTs, fftData.oVecFFTs);
 }
 
 
-// ========= setters =========
+// ========= Setters =========
 void FFTManager::setNumFFTChannels(unsigned int numFFTChannels)
 {
     qDebug() << "Setting number of FFT channels";
@@ -96,7 +96,7 @@ int FFTManager::setFFTSize(unsigned int fftSize)
 }
 
 
-// ========= getters =========
+// ========= Getters =========
 unsigned int FFTManager::getNumFFTChannels()
 {
     return fftParams.numFFTChannels;
@@ -109,7 +109,7 @@ unsigned int FFTManager::getFFTSize()
 }
 
 
-// ========= math =========
+// ========= Math =========
 void FFTManager::calculateFFT
 (
     std::vector<std::vector<float>>& iVecFFTs,

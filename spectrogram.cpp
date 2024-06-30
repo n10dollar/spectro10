@@ -25,7 +25,7 @@ Spectrogram::Spectrogram
 }
 
 
-// =========== Slots ===========
+// ========= Slots =========
 void Spectrogram::update()
 {
     QWidget::update();
@@ -33,7 +33,7 @@ void Spectrogram::update()
 };
 
 
-// =========== Overriden ===========
+// ========= Overriden =========
 void Spectrogram::paintEvent(QPaintEvent *event)
 {
     painter.begin(this);
@@ -42,7 +42,7 @@ void Spectrogram::paintEvent(QPaintEvent *event)
 }
 
 
-// =========== Class methods ===========
+// ========= Drawing =========
 void Spectrogram::paintLinear(QPainter* painter, QPaintEvent* event)
 {
     painter->fillRect(event->rect(), background);
