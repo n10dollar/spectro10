@@ -6,7 +6,6 @@
 #include <vector>
 #include <set>
 #include <cmath>
-#include <climits>
 #include <algorithm>
 
 template<typename T>
